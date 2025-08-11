@@ -1,0 +1,2024 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Video Wall Configuration & Monitoring</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            min-height: 100vh;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+
+        .header h1 {
+            font-size: 2.5rem;
+            margin-bottom: 10px;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+        }
+
+        .tab-navigation {
+            display: flex;
+            justify-content: center;
+            margin-bottom: 30px;
+            background: rgba(255,255,255,0.1);
+            border-radius: 15px;
+            padding: 10px;
+            backdrop-filter: blur(10px);
+        }
+
+        .tab-btn {
+            flex: 1;
+            max-width: 200px;
+            padding: 15px 20px;
+            border: none;
+            background: transparent;
+            color: white;
+            cursor: pointer;
+            border-radius: 10px;
+            transition: all 0.3s ease;
+            font-weight: bold;
+            margin: 0 5px;
+        }
+
+        .tab-btn.active {
+            background: rgba(255,255,255,0.2);
+            box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+            transform: translateY(-2px);
+        }
+
+        .tab-btn:hover:not(.active) {
+            background: rgba(255,255,255,0.1);
+        }
+
+        .tab-content {
+            display: none;
+        }
+
+        .tab-content.active {
+            display: block;
+        }
+
+        /* Configuration Wizard Styles */
+        .wizard-container {
+            background: rgba(255,255,255,0.1);
+            border-radius: 20px;
+            padding: 30px;
+            backdrop-filter: blur(15px);
+            border: 1px solid rgba(255,255,255,0.2);
+        }
+
+        .wizard-steps {
+            display: flex;
+            justify-content: center;
+            margin-bottom: 30px;
+        }
+
+        .step {
+            display: flex;
+            align-items: center;
+            margin: 0 10px;
+        }
+
+        .step-number {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background: rgba(255,255,255,0.2);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            margin-right: 10px;
+        }
+
+        .step.active .step-number {
+            background: linear-gradient(45deg, #4CAF50, #66BB6A);
+        }
+
+        .step.completed .step-number {
+            background: linear-gradient(45deg, #2196F3, #21CBF3);
+        }
+
+        .step-arrow {
+            margin: 0 15px;
+            color: rgba(255,255,255,0.5);
+        }
+
+        .wizard-content {
+            min-height: 400px;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: bold;
+            color: #E3F2FD;
+        }
+
+        .form-group input,
+        .form-group select,
+        .form-group textarea {
+            width: 100%;
+            padding: 12px;
+            border-radius: 8px;
+            border: 1px solid rgba(255,255,255,0.3);
+            background: rgba(255,255,255,0.2);
+            color: white;
+            font-size: 14px;
+        }
+
+        .form-group input::placeholder,
+        .form-group textarea::placeholder {
+            color: rgba(255,255,255,0.7);
+        }
+
+        .discovery-section {
+            background: rgba(255,255,255,0.1);
+            border-radius: 15px;
+            padding: 20px;
+            margin-bottom: 20px;
+        }
+
+        .discovery-controls {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+
+        .btn {
+            padding: 12px 24px;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: bold;
+            transition: all 0.3s ease;
+            text-decoration: none;
+            display: inline-block;
+            text-align: center;
+        }
+
+        .btn-primary {
+            background: linear-gradient(45deg, #2196F3, #21CBF3);
+            color: white;
+        }
+
+        .btn-secondary {
+            background: transparent;
+            color: white;
+            border: 2px solid rgba(255,255,255,0.3);
+        }
+
+        .btn-success {
+            background: linear-gradient(45deg, #4CAF50, #66BB6A);
+            color: white;
+        }
+
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+        }
+
+        .discovered-displays {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 15px;
+            margin-top: 20px;
+        }
+
+        .display-card {
+            background: rgba(255,255,255,0.1);
+            border-radius: 10px;
+            padding: 15px;
+            border: 2px solid transparent;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .display-card:hover {
+            border-color: rgba(255,255,255,0.3);
+            transform: translateY(-3px);
+        }
+
+        .display-card.selected {
+            border-color: #2196F3;
+            background: rgba(33, 150, 243, 0.2);
+        }
+
+        .display-info {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 10px;
+        }
+
+        .display-status {
+            display: inline-block;
+            padding: 4px 8px;
+            border-radius: 12px;
+            font-size: 0.8rem;
+            font-weight: bold;
+        }
+
+        .status-online {
+            background: #4CAF50;
+        }
+
+        .status-offline {
+            background: #f44336;
+        }
+
+        .layout-selector {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 15px;
+            margin: 20px 0;
+        }
+
+        .layout-option {
+            background: rgba(255,255,255,0.1);
+            border-radius: 10px;
+            padding: 20px;
+            text-align: center;
+            cursor: pointer;
+            border: 2px solid transparent;
+            transition: all 0.3s ease;
+        }
+
+        .layout-option:hover {
+            border-color: rgba(255,255,255,0.3);
+        }
+
+        .layout-option.selected {
+            border-color: #2196F3;
+            background: rgba(33, 150, 243, 0.2);
+        }
+
+        .layout-preview {
+            width: 60px;
+            height: 40px;
+            margin: 0 auto 10px;
+            border: 2px solid white;
+            border-radius: 5px;
+            position: relative;
+        }
+
+        /* Monitoring Dashboard Styles */
+        .dashboard-container {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+
+        .dashboard-card {
+            background: rgba(255,255,255,0.1);
+            border-radius: 15px;
+            padding: 25px;
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255,255,255,0.2);
+        }
+
+        .card-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+
+        .card-title {
+            font-size: 1.3rem;
+            font-weight: bold;
+        }
+
+        .status-indicator {
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            animation: pulse 2s infinite;
+        }
+
+        .status-healthy {
+            background: #4CAF50;
+        }
+
+        .status-warning {
+            background: #FF9800;
+        }
+
+        .status-critical {
+            background: #f44336;
+        }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.5; }
+        }
+
+        .metrics-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 15px;
+        }
+
+        .metric {
+            text-align: center;
+            padding: 15px;
+            background: rgba(255,255,255,0.1);
+            border-radius: 10px;
+        }
+
+        .metric-value {
+            font-size: 2rem;
+            font-weight: bold;
+            margin-bottom: 5px;
+        }
+
+        .metric-label {
+            font-size: 0.9rem;
+            opacity: 0.8;
+        }
+
+        .display-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+
+        .display-status-card {
+            background: rgba(255,255,255,0.1);
+            border-radius: 10px;
+            padding: 15px;
+            position: relative;
+        }
+
+        .display-status-card.offline {
+            background: rgba(244, 67, 54, 0.2);
+        }
+
+        .display-status-card.warning {
+            background: rgba(255, 152, 0, 0.2);
+        }
+
+        .temperature-gauge {
+            width: 60px;
+            height: 60px;
+            border-radius: 50%;
+            background: conic-gradient(
+                from 0deg,
+                #4CAF50 0deg 120deg,
+                #FF9800 120deg 240deg,
+                #f44336 240deg 360deg
+            );
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+            margin: 10px auto;
+        }
+
+        .temperature-gauge::before {
+            content: '';
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            background: rgba(255,255,255,0.9);
+            position: absolute;
+        }
+
+        .temperature-value {
+            position: relative;
+            z-index: 1;
+            font-weight: bold;
+            color: #333;
+        }
+
+        .alerts-section {
+            grid-column: 1 / -1;
+        }
+
+        .alerts-list {
+            max-height: 300px;
+            overflow-y: auto;
+        }
+
+        .alert-item {
+            display: flex;
+            align-items: center;
+            padding: 12px;
+            margin-bottom: 8px;
+            border-radius: 8px;
+            border-left: 4px solid;
+        }
+
+        .alert-critical {
+            background: rgba(244, 67, 54, 0.2);
+            border-left-color: #f44336;
+        }
+
+        .alert-warning {
+            background: rgba(255, 152, 0, 0.2);
+            border-left-color: #FF9800;
+        }
+
+        .alert-info {
+            background: rgba(33, 150, 243, 0.2);
+            border-left-color: #2196F3;
+        }
+
+        .alert-icon {
+            margin-right: 10px;
+            font-size: 1.2rem;
+        }
+
+        .alert-content {
+            flex: 1;
+        }
+
+        .alert-message {
+            font-weight: bold;
+            margin-bottom: 2px;
+        }
+
+        .alert-time {
+            font-size: 0.8rem;
+            opacity: 0.7;
+        }
+
+        .loading-spinner {
+            width: 40px;
+            height: 40px;
+            border: 4px solid rgba(255,255,255,0.3);
+            border-radius: 50%;
+            border-top-color: white;
+            animation: spin 1s ease-in-out infinite;
+            margin: 20px auto;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        .progress-bar {
+            width: 100%;
+            height: 6px;
+            background: rgba(255,255,255,0.2);
+            border-radius: 3px;
+            overflow: hidden;
+            margin: 10px 0;
+        }
+
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(45deg, #2196F3, #21CBF3);
+            transition: width 0.3s ease;
+        }
+
+        .wizard-actions {
+            display: flex;
+            justify-content: space-between;
+            margin-top: 30px;
+        }
+
+        .notification {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            padding: 15px 20px;
+            border-radius: 10px;
+            color: white;
+            z-index: 1000;
+            transform: translateX(100%);
+            transition: transform 0.3s ease;
+            max-width: 300px;
+        }
+
+        .notification.show {
+            transform: translateX(0);
+        }
+
+        .notification.success {
+            background: #4CAF50;
+        }
+
+        .notification.error {
+            background: #f44336;
+        }
+
+        .notification.warning {
+            background: #FF9800;
+        }
+
+        @media (max-width: 768px) {
+            .dashboard-container {
+                grid-template-columns: 1fr;
+            }
+            
+            .wizard-steps {
+                flex-direction: column;
+                align-items: center;
+            }
+            
+            .step-arrow {
+                transform: rotate(90deg);
+                margin: 10px 0;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🖥️ Video Wall Configuration & Monitoring</h1>
+            <p>Samsung LHB55ECH Business Display Management</p>
+        </div>
+
+        <div class="tab-navigation">
+            <button class="tab-btn active" onclick="switchMainTab('wizard')">🔧 Configuration Wizard</button>
+            <button class="tab-btn" onclick="switchMainTab('monitor')">📊 Live Monitoring</button>
+            <button class="tab-btn" onclick="switchMainTab('layout')">🎯 Layout Manager</button>
+        </div>
+
+        <!-- Configuration Wizard Tab -->
+        <div class="tab-content active" id="wizard">
+            <div class="wizard-container">
+                <div class="wizard-steps">
+                    <div class="step active" id="step-1">
+                        <div class="step-number">1</div>
+                        <span>Discovery</span>
+                    </div>
+                    <div class="step-arrow">→</div>
+                    <div class="step" id="step-2">
+                        <div class="step-number">2</div>
+                        <span>Layout</span>
+                    </div>
+                    <div class="step-arrow">→</div>
+                    <div class="step" id="step-3">
+                        <div class="step-number">3</div>
+                        <span>Services</span>
+                    </div>
+                    <div class="step-arrow">→</div>
+                    <div class="step" id="step-4">
+                        <div class="step-number">4</div>
+                        <span>Complete</span>
+                    </div>
+                </div>
+
+                <div class="wizard-content">
+                    <!-- Step 1: Display Discovery -->
+                    <div class="wizard-step active" id="wizard-step-1">
+                        <h2>Display Discovery</h2>
+                        <p>Let's find your Samsung LHB55ECH displays on the network.</p>
+                        
+                        <div class="discovery-section">
+                            <div class="form-group">
+                                <label for="ip-range">IP Address Range</label>
+                                <input type="text" id="ip-range" placeholder="192.168.1.100-110" value="192.168.1.100-110">
+                            </div>
+                            
+                            <div class="discovery-controls">
+                                <button class="btn btn-primary" onclick="startDiscovery()">🔍 Start Discovery</button>
+                                <button class="btn btn-secondary" onclick="addManualDisplay()">➕ Add Manual</button>
+                                <button class="btn btn-secondary" onclick="importConfig()">📁 Import Config</button>
+                            </div>
+                            
+                            <div id="discovery-progress" style="display: none;">
+                                <div class="progress-bar">
+                                    <div class="progress-fill" id="progress-fill"></div>
+                                </div>
+                                <p id="discovery-status">Scanning network...</p>
+                            </div>
+                        </div>
+
+                        <div id="discovered-displays" class="discovered-displays">
+                            <!-- Discovered displays will be populated here -->
+                        </div>
+                    </div>
+
+                    <!-- Step 2: Layout Configuration -->
+                    <div class="wizard-step" id="wizard-step-2">
+                        <h2>Video Wall Layout</h2>
+                        <p>Configure how your displays are arranged in the video wall.</p>
+                        
+                        <div class="layout-selector" id="layout-options">
+                            <!-- Layout options will be populated based on discovered displays -->
+                        </div>
+
+                        <div class="form-group">
+                            <label>Display Arrangement Preview</label>
+                            <div id="layout-preview" style="text-align: center; margin: 20px 0;">
+                                <!-- Visual layout preview will be shown here -->
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Step 3: Service Configuration -->
+                    <div class="wizard-step" id="wizard-step-3">
+                        <h2>Content Services</h2>
+                        <p>Configure MagicInfo, OptiSigns, and other content sources.</p>
+                        
+                        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px;">
+                            <div class="discovery-section">
+                                <h3>🎭 MagicInfo Server</h3>
+                                <div class="form-group">
+                                    <label>
+                                        <input type="checkbox" id="magicinfo-enabled"> Enable MagicInfo
+                                    </label>
+                                </div>
+                                <div class="form-group">
+                                    <label for="magicinfo-url">Server URL</label>
+                                    <input type="url" id="magicinfo-url" placeholder="http://192.168.1.200:7001">
+                                </div>
+                                <div class="form-group">
+                                    <label for="magicinfo-username">Username</label>
+                                    <input type="text" id="magicinfo-username" placeholder="admin">
+                                </div>
+                                <div class="form-group">
+                                    <label for="magicinfo-password">Password</label>
+                                    <input type="password" id="magicinfo-password">
+                                </div>
+                                <button class="btn btn-secondary" onclick="testMagicInfo()">Test Connection</button>
+                            </div>
+
+                            <div class="discovery-section">
+                                <h3>🎵 OptiSigns</h3>
+                                <div class="form-group">
+                                    <label>
+                                        <input type="checkbox" id="optisigns-enabled"> Enable OptiSigns
+                                    </label>
+                                </div>
+                                <div class="form-group">
+                                    <label for="optisigns-url">Server URL</label>
+                                    <input type="url" id="optisigns-url" placeholder="http://192.168.1.201:8080">
+                                </div>
+                                <div class="form-group">
+                                    <label for="optisigns-apikey">API Key</label>
+                                    <input type="text" id="optisigns-apikey" placeholder="your-api-key">
+                                </div>
+                                <button class="btn btn-secondary" onclick="testOptiSigns()">Test Connection</button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Step 4: Completion -->
+                    <div class="wizard-step" id="wizard-step-4">
+                        <h2>Configuration Complete</h2>
+                        <p>Review your configuration and deploy to the video wall system.</p>
+                        
+                        <div class="discovery-section">
+                            <h3>📋 Configuration Summary</h3>
+                            <div id="config-summary">
+                                <!-- Configuration summary will be displayed here -->
+                            </div>
+                        </div>
+
+                        <div class="discovery-section">
+                            <h3>🚀 Deployment Options</h3>
+                            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 15px;">
+                                <button class="btn btn-success" onclick="deployConfiguration()">Deploy Now</button>
+                                <button class="btn btn-secondary" onclick="saveConfiguration()">Save Config</button>
+                                <button class="btn btn-secondary" onclick="exportConfiguration()">Export Config</button>
+                                <button class="btn btn-secondary" onclick="scheduleDeployment()">Schedule Later</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="wizard-actions">
+                    <button class="btn btn-secondary" id="prev-btn" onclick="previousStep()" disabled>← Previous</button>
+                    <button class="btn btn-primary" id="next-btn" onclick="nextStep()">Next →</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Live Monitoring Tab -->
+        <div class="tab-content" id="monitor">
+            <div class="dashboard-container">
+                <!-- System Overview -->
+                <div class="dashboard-card">
+                    <div class="card-header">
+                        <h3 class="card-title">System Overview</h3>
+                        <div class="status-indicator status-healthy" id="system-status"></div>
+                    </div>
+                    <div class="metrics-grid">
+                        <div class="metric">
+                            <div class="metric-value" id="connected-displays">4</div>
+                            <div class="metric-label">Connected</div>
+                        </div>
+                        <div class="metric">
+                            <div class="metric-value" id="responsive-displays">4</div>
+                            <div class="metric-label">Responsive</div>
+                        </div>
+                        <div class="metric">
+                            <div class="metric-value" id="avg-temperature">65°C</div>
+                            <div class="metric-label">Avg Temp</div>
+                        </div>
+                        <div class="metric">
+                            <div class="metric-value" id="uptime">24h</div>
+                            <div class="metric-label">Uptime</div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Display Status Grid -->
+                <div class="dashboard-card">
+                    <div class="card-header">
+                        <h3 class="card-title">Display Status</h3>
+                        <button class="btn btn-secondary" onclick="refreshDisplayStatus()">🔄 Refresh</button>
+                    </div>
+                    <div class="display-grid" id="display-status-grid">
+                        <!-- Display status cards will be populated here -->
+                    </div>
+                </div>
+
+                <!-- Real-time Alerts -->
+                <div class="dashboard-card alerts-section">
+                    <div class="card-header">
+                        <h3 class="card-title">Real-time Alerts</h3>
+                        <div style="display: flex; gap: 10px;">
+                            <button class="btn btn-secondary" onclick="filterAlerts('all')">All</button>
+                            <button class="btn btn-secondary" onclick="filterAlerts('critical')">Critical</button>
+                            <button class="btn btn-secondary" onclick="filterAlerts('warning')">Warning</button>
+                            <button class="btn btn-secondary" onclick="clearAlerts()">Clear</button>
+                        </div>
+                    </div>
+                    <div class="alerts-list" id="alerts-list">
+                        <!-- Alerts will be populated here -->
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Layout Manager Tab -->
+        <div class="tab-content" id="layout">
+            <div class="wizard-container">
+                <h2>Video Wall Layout Manager</h2>
+                <p>Manage video wall configurations and test different layouts.</p>
+                
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-bottom: 20px;">
+                    <div class="discovery-section">
+                        <h3>Available Layouts</h3>
+                        <div id="available-layouts">
+                            <!-- Available layouts will be shown here -->
+                        </div>
+                    </div>
+                    
+                    <div class="discovery-section">
+                        <h3>Current Configuration</h3>
+                        <div id="current-layout-info">
+                            <p>No video wall currently configured</p>
+                        </div>
+                        <div style="margin-top: 15px;">
+                            <button class="btn btn-primary" onclick="applyLayout()">Apply Layout</button>
+                            <button class="btn btn-secondary" onclick="testLayout()">Test Layout</button>
+                            <button class="btn btn-secondary" onclick="disableVideoWall()">Disable Video Wall</button>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="discovery-section">
+                    <h3>Layout Preview</h3>
+                    <div id="layout-visual-preview" style="text-align: center; padding: 20px;">
+                        <!-- Visual representation of the video wall layout -->
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Notification -->
+    <div class="notification" id="notification"></div>
+
+    <script>
+        // Global variables
+        let currentStep = 1;
+        let discoveredDisplays = [];
+        let selectedLayout = null;
+        let configurationData = {};
+        let monitoringInterval = null;
+        let alertFilter = 'all';
+
+        // Tab Management
+        function switchMainTab(tabName) {
+            // Hide all tab contents
+            document.querySelectorAll('.tab-content').forEach(tab => {
+                tab.classList.remove('active');
+            });
+            
+            // Remove active class from all tab buttons
+            document.querySelectorAll('.tab-btn').forEach(btn => {
+                btn.classList.remove('active');
+            });
+            
+            // Show selected tab and mark button as active
+            document.getElementById(tabName).classList.add('active');
+            event.target.classList.add('active');
+
+            // Initialize tab-specific functionality
+            if (tabName === 'monitor') {
+                startMonitoring();
+            }
+            if (tabName === 'layout') {
+                loadAvailableLayouts();
+            }
+        }
+
+        // Wizard Step Management
+        function nextStep() {
+            if (currentStep < 4) {
+                // Validate current step
+                if (validateStep(currentStep)) {
+                    document.getElementById(`wizard-step-${currentStep}`).classList.remove('active');
+                    document.getElementById(`step-${currentStep}`).classList.remove('active');
+                    document.getElementById(`step-${currentStep}`).classList.add('completed');
+                    
+                    currentStep++;
+                    
+                    document.getElementById(`wizard-step-${currentStep}`).classList.add('active');
+                    document.getElementById(`step-${currentStep}`).classList.add('active');
+                    
+                    updateWizardButtons();
+                    
+                    // Load step-specific content
+                    loadStepContent(currentStep);
+                }
+            }
+        }
+
+        function previousStep() {
+            if (currentStep > 1) {
+                document.getElementById(`wizard-step-${currentStep}`).classList.remove('active');
+                document.getElementById(`step-${currentStep}`).classList.remove('active');
+                
+                currentStep--;
+                
+                document.getElementById(`wizard-step-${currentStep}`).classList.add('active');
+                document.getElementById(`step-${currentStep}`).classList.remove('completed');
+                document.getElementById(`step-${currentStep}`).classList.add('active');
+                
+                updateWizardButtons();
+            }
+        }
+
+        function updateWizardButtons() {
+            const prevBtn = document.getElementById('prev-btn');
+            const nextBtn = document.getElementById('next-btn');
+            
+            prevBtn.disabled = currentStep === 1;
+            
+            if (currentStep === 4) {
+                nextBtn.textContent = 'Deploy →';
+                nextBtn.onclick = deployConfiguration;
+            } else {
+                nextBtn.textContent = 'Next →';
+                nextBtn.onclick = nextStep;
+            }
+        }
+
+        function validateStep(step) {
+            switch (step) {
+                case 1:
+                    return discoveredDisplays.length > 0;
+                case 2:
+                    return selectedLayout !== null;
+                case 3:
+                    return true; // Services are optional
+                default:
+                    return true;
+            }
+        }
+
+        function loadStepContent(step) {
+            switch (step) {
+                case 2:
+                    generateLayoutOptions();
+                    break;
+                case 3:
+                    // Services step is already loaded
+                    break;
+                case 4:
+                    generateConfigSummary();
+                    break;
+            }
+        }
+
+        // Display Discovery Functions
+        async function startDiscovery() {
+            const ipRange = document.getElementById('ip-range').value;
+            const progressSection = document.getElementById('discovery-progress');
+            const progressFill = document.getElementById('progress-fill');
+            const statusText = document.getElementById('discovery-status');
+            const displaysContainer = document.getElementById('discovered-displays');
+            
+            // Show progress section
+            progressSection.style.display = 'block';
+            displaysContainer.innerHTML = '';
+            discoveredDisplays = [];
+            
+            try {
+                const response = await fetch('/api/wizard/discover', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ ip_range: ipRange })
+                });
+                
+                const data = await response.json();
+                
+                if (data.success) {
+                    // Simulate progress for better UX
+                    let progress = 0;
+                    const progressInterval = setInterval(() => {
+                        progress += 10;
+                        progressFill.style.width = progress + '%';
+                        
+                        if (progress >= 100) {
+                            clearInterval(progressInterval);
+                            displayDiscoveredDevices(data.displays);
+                            progressSection.style.display = 'none';
+                        }
+                    }, 200);
+                } else {
+                    showNotification('Discovery failed: ' + data.error, 'error');
+                    progressSection.style.display = 'none';
+                }
+            } catch (error) {
+                showNotification('Discovery error: ' + error.message, 'error');
+                progressSection.style.display = 'none';
+            }
+        }
+
+        function displayDiscoveredDevices(displays) {
+            const container = document.getElementById('discovered-displays');
+            discoveredDisplays = displays;
+            
+            displays.forEach((display, index) => {
+                const card = document.createElement('div');
+                card.className = 'display-card';
+                card.onclick = () => toggleDisplaySelection(index);
+                
+                card.innerHTML = `
+                    <div class="display-info">
+                        <strong>Display ${index + 1}</strong>
+                        <span class="display-status ${display.responsive ? 'status-online' : 'status-offline'}">
+                            ${display.responsive ? 'ONLINE' : 'OFFLINE'}
+                        </span>
+                    </div>
+                    <div><strong>IP:</strong> ${display.ip}</div>
+                    <div><strong>Model:</strong> ${display.model || 'Samsung LHB55ECH'}</div>
+                    <div><strong>Serial:</strong> ${display.serial_number || 'Unknown'}</div>
+                    ${display.temperature ? `<div><strong>Temperature:</strong> ${display.temperature}°C</div>` : ''}
+                `;
+                
+                container.appendChild(card);
+            });
+            
+            // Auto-select all responsive displays
+            displays.forEach((display, index) => {
+                if (display.responsive) {
+                    toggleDisplaySelection(index);
+                }
+            });
+        }
+
+        function toggleDisplaySelection(index) {
+            const card = document.querySelectorAll('.display-card')[index];
+            const display = discoveredDisplays[index];
+            
+            display.selected = !display.selected;
+            
+            if (display.selected) {
+                card.classList.add('selected');
+            } else {
+                card.classList.remove('selected');
+            }
+        }
+
+        function addManualDisplay() {
+            const ip = prompt('Enter display IP address:');
+            if (ip) {
+                const manualDisplay = {
+                    ip: ip,
+                    model: 'Samsung LHB55ECH',
+                    responsive: false,
+                    selected: true,
+                    manual: true
+                };
+                
+                discoveredDisplays.push(manualDisplay);
+                displayDiscoveredDevices(discoveredDisplays);
+            }
+        }
+
+        function importConfig() {
+            const input = document.createElement('input');
+            input.type = 'file';
+            input.accept = '.json,.yaml,.yml';
+            input.onchange = (e) => {
+                const file = e.target.files[0];
+                if (file) {
+                    const reader = new FileReader();
+                    reader.onload = (e) => {
+                        try {
+                            const config = JSON.parse(e.target.result);
+                            importConfigurationData(config);
+                            showNotification('Configuration imported successfully', 'success');
+                        } catch (error) {
+                            showNotification('Failed to import configuration: ' + error.message, 'error');
+                        }
+                    };
+                    reader.readAsText(file);
+                }
+            };
+            input.click();
+        }
+
+        function importConfigurationData(config) {
+            if (config.displays) {
+                discoveredDisplays = Object.values(config.displays).map((display, index) => ({
+                    ip: display.ip,
+                    model: display.model || 'Samsung LHB55ECH',
+                    serial_number: display.serial_number,
+                    responsive: true,
+                    selected: true,
+                    imported: true
+                }));
+                
+                displayDiscoveredDevices(discoveredDisplays);
+            }
+        }
+
+        // Layout Management Functions
+        function generateLayoutOptions() {
+            const selectedDisplays = discoveredDisplays.filter(d => d.selected);
+            const count = selectedDisplays.length;
+            const container = document.getElementById('layout-options');
+            
+            container.innerHTML = '';
+            
+            // Generate possible layouts
+            const layouts = [];
+            for (let h = 1; h <= count; h++) {
+                if (count % h === 0) {
+                    const v = count / h;
+                    layouts.push({ h, v, name: `${h}x${v}` });
+                }
+            }
+            
+            layouts.forEach(layout => {
+                const option = document.createElement('div');
+                option.className = 'layout-option';
+                option.onclick = () => selectLayout(layout);
+                
+                option.innerHTML = `
+                    <div class="layout-preview" id="preview-${layout.name}"></div>
+                    <div><strong>${layout.name}</strong></div>
+                    <div>${layout.h} × ${layout.v}</div>
+                `;
+                
+                container.appendChild(option);
+                
+                // Create visual preview
+                createLayoutPreview(`preview-${layout.name}`, layout.h, layout.v);
+            });
+        }
+
+        function createLayoutPreview(containerId, h, v) {
+            const container = document.getElementById(containerId);
+            container.innerHTML = '';
+            
+            const gridWidth = 50;
+            const gridHeight = 30;
+            const cellWidth = gridWidth / h;
+            const cellHeight = gridHeight / v;
+            
+            for (let row = 0; row < v; row++) {
+                for (let col = 0; col < h; col++) {
+                    const cell = document.createElement('div');
+                    cell.style.position = 'absolute';
+                    cell.style.left = (col * cellWidth) + 'px';
+                    cell.style.top = (row * cellHeight) + 'px';
+                    cell.style.width = (cellWidth - 1) + 'px';
+                    cell.style.height = (cellHeight - 1) + 'px';
+                    cell.style.backgroundColor = 'rgba(255,255,255,0.5)';
+                    cell.style.border = '1px solid white';
+                    
+                    container.appendChild(cell);
+                }
+            }
+        }
+
+        function selectLayout(layout) {
+            // Remove previous selection
+            document.querySelectorAll('.layout-option').forEach(option => {
+                option.classList.remove('selected');
+            });
+            
+            // Select current layout
+            event.currentTarget.classList.add('selected');
+            selectedLayout = layout;
+            
+            // Update preview
+            updateLayoutPreview();
+        }
+
+        function updateLayoutPreview() {
+            const preview = document.getElementById('layout-preview');
+            if (selectedLayout) {
+                preview.innerHTML = `
+                    <div style="display: inline-block; position: relative; width: 200px; height: 120px; background: rgba(255,255,255,0.1); border-radius: 10px;">
+                        <div id="main-preview"></div>
+                    </div>
+                    <p style="margin-top: 10px;">Selected: ${selectedLayout.name} layout</p>
+                `;
+                
+                createLayoutPreview('main-preview', selectedLayout.h, selectedLayout.v);
+            }
+        }
+
+        // Service Configuration Functions
+        async function testMagicInfo() {
+            const url = document.getElementById('magicinfo-url').value;
+            const username = document.getElementById('magicinfo-username').value;
+            const password = document.getElementById('magicinfo-password').value;
+            
+            if (!url) {
+                showNotification('Please enter MagicInfo server URL', 'warning');
+                return;
+            }
+            
+            try {
+                const response = await fetch('/api/wizard/test-magicinfo', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ url, username, password })
+                });
+                
+                const data = await response.json();
+                
+                if (data.success) {
+                    showNotification('MagicInfo connection successful', 'success');
+                } else {
+                    showNotification('MagicInfo connection failed: ' + data.error, 'error');
+                }
+            } catch (error) {
+                showNotification('MagicInfo test error: ' + error.message, 'error');
+            }
+        }
+
+        async function testOptiSigns() {
+            const url = document.getElementById('optisigns-url').value;
+            const apiKey = document.getElementById('optisigns-apikey').value;
+            
+            if (!url || !apiKey) {
+                showNotification('Please enter OptiSigns URL and API key', 'warning');
+                return;
+            }
+            
+            try {
+                const response = await fetch('/api/wizard/test-optisigns', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ url, api_key: apiKey })
+                });
+                
+                const data = await response.json();
+                
+                if (data.success) {
+                    showNotification('OptiSigns connection successful', 'success');
+                } else {
+                    showNotification('OptiSigns connection failed: ' + data.error, 'error');
+                }
+            } catch (error) {
+                showNotification('OptiSigns test error: ' + error.message, 'error');
+            }
+        }
+
+        // Configuration Summary and Deployment
+        function generateConfigSummary() {
+            const selectedDisplays = discoveredDisplays.filter(d => d.selected);
+            const summary = document.getElementById('config-summary');
+            
+            configurationData = {
+                displays: {},
+                video_wall: {
+                    enabled: selectedDisplays.length > 1 && selectedLayout,
+                    layout: selectedLayout
+                },
+                magicinfo: {
+                    enabled: document.getElementById('magicinfo-enabled').checked,
+                    server_url: document.getElementById('magicinfo-url').value,
+                    username: document.getElementById('magicinfo-username').value,
+                    password: document.getElementById('magicinfo-password').value
+                },
+                optisigns: {
+                    enabled: document.getElementById('optisigns-enabled').checked,
+                    server_url: document.getElementById('optisigns-url').value,
+                    api_key: document.getElementById('optisigns-apikey').value
+                }
+            };
+            
+            // Configure displays
+            selectedDisplays.forEach((display, index) => {
+                configurationData.displays[index + 1] = {
+                    name: `Display ${index + 1} - Samsung LHB55ECH`,
+                    ip: display.ip,
+                    port: 1515,
+                    protocol: 'tcp',
+                    model: 'LHB55ECH',
+                    serial_number: display.serial_number || ''
+                };
+            });
+            
+            summary.innerHTML = `
+                <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 15px;">
+                    <div class="metric">
+                        <div class="metric-value">${selectedDisplays.length}</div>
+                        <div class="metric-label">Displays</div>
+                    </div>
+                    <div class="metric">
+                        <div class="metric-value">${selectedLayout ? selectedLayout.name : 'None'}</div>
+                        <div class="metric-label">Layout</div>
+                    </div>
+                    <div class="metric">
+                        <div class="metric-value">${configurationData.magicinfo.enabled ? 'Yes' : 'No'}</div>
+                        <div class="metric-label">MagicInfo</div>
+                    </div>
+                    <div class="metric">
+                        <div class="metric-value">${configurationData.optisigns.enabled ? 'Yes' : 'No'}</div>
+                        <div class="metric-label">OptiSigns</div>
+                    </div>
+                </div>
+                
+                <div style="margin-top: 20px;">
+                    <h4>Display List:</h4>
+                    <ul style="margin: 10px 0; padding-left: 20px;">
+                        ${selectedDisplays.map((display, index) => 
+                            `<li>Display ${index + 1}: ${display.ip} (${display.model})</li>`
+                        ).join('')}
+                    </ul>
+                </div>
+            `;
+        }
+
+        async function deployConfiguration() {
+            showNotification('Deploying configuration...', 'success');
+            
+            try {
+                const response = await fetch('/api/wizard/deploy', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(configurationData)
+                });
+                
+                const data = await response.json();
+                
+                if (data.success) {
+                    showNotification('Configuration deployed successfully!', 'success');
+                    // Switch to monitoring tab after successful deployment
+                    setTimeout(() => {
+                        switchMainTab('monitor');
+                    }, 2000);
+                } else {
+                    showNotification('Deployment failed: ' + data.error, 'error');
+                }
+            } catch (error) {
+                showNotification('Deployment error: ' + error.message, 'error');
+            }
+        }
+
+        function saveConfiguration() {
+            const configJson = JSON.stringify(configurationData, null, 2);
+            const blob = new Blob([configJson], { type: 'application/json' });
+            const url = URL.createObjectURL(blob);
+            
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = 'video-wall-config.json';
+            a.click();
+            
+            URL.revokeObjectURL(url);
+            showNotification('Configuration saved to file', 'success');
+        }
+
+        function exportConfiguration() {
+            const yamlConfig = convertToYAML(configurationData);
+            const blob = new Blob([yamlConfig], { type: 'text/yaml' });
+            const url = URL.createObjectURL(blob);
+            
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = 'config.yaml';
+            a.click();
+            
+            URL.revokeObjectURL(url);
+            showNotification('Configuration exported as YAML', 'success');
+        }
+
+        function convertToYAML(obj) {
+            // Simple YAML conversion (basic implementation)
+            function toYAML(obj, indent = 0) {
+                const spaces = '  '.repeat(indent);
+                let yaml = '';
+                
+                for (const [key, value] of Object.entries(obj)) {
+                    if (typeof value === 'object' && value !== null && !Array.isArray(value)) {
+                        yaml += `${spaces}${key}:\n${toYAML(value, indent + 1)}`;
+                    } else if (Array.isArray(value)) {
+                        yaml += `${spaces}${key}:\n`;
+                        value.forEach(item => {
+                            yaml += `${spaces}  - ${item}\n`;
+                        });
+                    } else {
+                        yaml += `${spaces}${key}: ${value}\n`;
+                    }
+                }
+                
+                return yaml;
+            }
+            
+            return toYAML(obj);
+        }
+
+        function scheduleDeployment() {
+            const scheduleTime = prompt('Enter deployment time (YYYY-MM-DD HH:MM):');
+            if (scheduleTime) {
+                showNotification(`Deployment scheduled for ${scheduleTime}`, 'success');
+                // In a real implementation, this would create a scheduled job
+            }
+        }
+
+        // Monitoring Functions
+        function startMonitoring() {
+            if (monitoringInterval) {
+                clearInterval(monitoringInterval);
+            }
+            
+            // Initial load
+            refreshDisplayStatus();
+            loadAlerts();
+            
+            // Set up periodic refresh
+            monitoringInterval = setInterval(() => {
+                refreshDisplayStatus();
+                loadAlerts();
+            }, 30000); // Refresh every 30 seconds
+        }
+
+        async function refreshDisplayStatus() {
+            try {
+                const response = await fetch('/api/displays/status');
+                const data = await response.json();
+                
+                if (data.success) {
+                    updateSystemMetrics(data.displays);
+                    updateDisplayGrid(data.displays);
+                }
+            } catch (error) {
+                console.error('Failed to refresh display status:', error);
+            }
+        }
+
+        function updateSystemMetrics(displays) {
+            const totalDisplays = Object.keys(displays).length;
+            const connectedDisplays = Object.values(displays).filter(d => d.online).length;
+            const responsiveDisplays = Object.values(displays).filter(d => d.online && d.power).length;
+            
+            document.getElementById('connected-displays').textContent = connectedDisplays;
+            document.getElementById('responsive-displays').textContent = responsiveDisplays;
+            
+            // Calculate average temperature
+            const temps = Object.values(displays)
+                .map(d => d.temperature)
+                .filter(t => t !== null && t !== undefined);
+            
+            if (temps.length > 0) {
+                const avgTemp = Math.round(temps.reduce((a, b) => a + b, 0) / temps.length);
+                document.getElementById('avg-temperature').textContent = `${avgTemp}°C`;
+            }
+            
+            // Update system status indicator
+            const systemStatus = document.getElementById('system-status');
+            if (connectedDisplays === totalDisplays) {
+                systemStatus.className = 'status-indicator status-healthy';
+            } else if (connectedDisplays > totalDisplays * 0.5) {
+                systemStatus.className = 'status-indicator status-warning';
+            } else {
+                systemStatus.className = 'status-indicator status-critical';
+            }
+        }
+
+        function updateDisplayGrid(displays) {
+            const grid = document.getElementById('display-status-grid');
+            grid.innerHTML = '';
+            
+            Object.entries(displays).forEach(([id, display]) => {
+                const card = document.createElement('div');
+                card.className = 'display-status-card';
+                
+                if (!display.online) {
+                    card.classList.add('offline');
+                } else if (display.temperature && display.temperature > 75) {
+                    card.classList.add('warning');
+                }
+                
+                card.innerHTML = `
+                    <div style="display: flex; justify-content: space-between; align-items: center;">
+                        <strong>Display ${id}</strong>
+                        <span class="display-status ${display.online ? 'status-online' : 'status-offline'}">
+                            ${display.online ? 'ONLINE' : 'OFFLINE'}
+                        </span>
+                    </div>
+                    
+                    ${display.temperature ? `
+                    <div class="temperature-gauge">
+                        <div class="temperature-value">${display.temperature}°C</div>
+                    </div>
+                    ` : ''}
+                    
+                    <div style="font-size: 0.9rem; opacity: 0.8;">
+                        <div>Volume: ${display.volume || 0}%</div>
+                        <div>Input: ${display.input_source || 'Unknown'}</div>
+                        <div>Content: ${display.current_content || 'None'}</div>
+                    </div>
+                `;
+                
+                grid.appendChild(card);
+            });
+        }
+
+        async function loadAlerts() {
+            try {
+                const response = await fetch('/api/monitoring/alerts');
+                const data = await response.json();
+                
+                if (data.success) {
+                    updateAlertsList(data.alerts);
+                }
+            } catch (error) {
+                console.error('Failed to load alerts:', error);
+            }
+        }
+
+        function updateAlertsList(alerts) {
+            const alertsList = document.getElementById('alerts-list');
+            
+            // Filter alerts based on current filter
+            const filteredAlerts = alertFilter === 'all' ? alerts : alerts.filter(alert => alert.level === alertFilter);
+            
+            if (filteredAlerts.length === 0) {
+                alertsList.innerHTML = '<p style="text-align: center; opacity: 0.7; padding: 20px;">No alerts to display</p>';
+                return;
+            }
+            
+            alertsList.innerHTML = filteredAlerts.map(alert => {
+                const timeAgo = formatTimeAgo(alert.timestamp);
+                const icon = getAlertIcon(alert.level);
+                
+                return `
+                    <div class="alert-item alert-${alert.level}">
+                        <div class="alert-icon">${icon}</div>
+                        <div class="alert-content">
+                            <div class="alert-message">${alert.message}</div>
+                            <div class="alert-time">${timeAgo}</div>
+                        </div>
+                    </div>
+                `;
+            }).join('');
+        }
+
+        function getAlertIcon(level) {
+            switch (level) {
+                case 'critical': return '🚨';
+                case 'warning': return '⚠️';
+                case 'info': return 'ℹ️';
+                default: return '📢';
+            }
+        }
+
+        function formatTimeAgo(timestamp) {
+            const now = Date.now() / 1000;
+            const diff = now - timestamp;
+            
+            if (diff < 60) return 'Just now';
+            if (diff < 3600) return `${Math.floor(diff / 60)} minutes ago`;
+            if (diff < 86400) return `${Math.floor(diff / 3600)} hours ago`;
+            return `${Math.floor(diff / 86400)} days ago`;
+        }
+
+        function filterAlerts(filter) {
+            alertFilter = filter;
+            
+            // Update button states
+            document.querySelectorAll('.alerts-section .btn').forEach(btn => {
+                btn.classList.remove('active');
+            });
+            event.target.classList.add('active');
+            
+            loadAlerts();
+        }
+
+        function clearAlerts() {
+            if (confirm('Are you sure you want to clear all alerts?')) {
+                fetch('/api/monitoring/alerts', { method: 'DELETE' })
+                    .then(() => {
+                        loadAlerts();
+                        showNotification('Alerts cleared', 'success');
+                    })
+                    .catch(error => {
+                        showNotification('Failed to clear alerts', 'error');
+                    });
+            }
+        }
+
+        // Layout Manager Functions
+        async function loadAvailableLayouts() {
+            try {
+                const response = await fetch('/api/layouts/available');
+                const data = await response.json();
+                
+                if (data.success) {
+                    displayAvailableLayouts(data.layouts);
+                    loadCurrentLayoutInfo();
+                }
+            } catch (error) {
+                console.error('Failed to load layouts:', error);
+            }
+        }
+
+        function displayAvailableLayouts(layouts) {
+            const container = document.getElementById('available-layouts');
+            
+            container.innerHTML = Object.entries(layouts).map(([name, layout]) => `
+                <div class="layout-option" onclick="selectAvailableLayout('${name}')">
+                    <div class="layout-preview" id="available-${name}"></div>
+                    <div><strong>${name}</strong></div>
+                    <div>${layout.horizontal} × ${layout.vertical}</div>
+                    <div style="font-size: 0.8rem; opacity: 0.7;">${layout.total_displays} displays</div>
+                </div>
+            `).join('');
+            
+            // Create previews
+            Object.entries(layouts).forEach(([name, layout]) => {
+                createLayoutPreview(`available-${name}`, layout.horizontal, layout.vertical);
+            });
+        }
+
+        function selectAvailableLayout(layoutName) {
+            document.querySelectorAll('#available-layouts .layout-option').forEach(option => {
+                option.classList.remove('selected');
+            });
+            
+            event.currentTarget.classList.add('selected');
+            selectedLayout = { name: layoutName };
+            
+            updateLayoutVisualPreview(layoutName);
+        }
+
+        function updateLayoutVisualPreview(layoutName) {
+            const preview = document.getElementById('layout-visual-preview');
+            preview.innerHTML = `
+                <div style="display: inline-block; position: relative; width: 400px; height: 240px; background: rgba(255,255,255,0.1); border-radius: 10px; padding: 20px;">
+                    <div id="visual-preview-${layoutName}"></div>
+                </div>
+                <p style="margin-top: 15px;">Preview: ${layoutName} Video Wall Layout</p>
+            `;
+            
+            // Get layout info and create detailed preview
+            fetch(`/api/layouts/${layoutName}`)
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        createDetailedLayoutPreview(`visual-preview-${layoutName}`, data.layout);
+                    }
+                });
+        }
+
+        function createDetailedLayoutPreview(containerId, layout) {
+            const container = document.getElementById(containerId);
+            container.innerHTML = '';
+            container.style.position = 'relative';
+            container.style.width = '360px';
+            container.style.height = '200px';
+            
+            const cellWidth = 360 / layout.horizontal;
+            const cellHeight = 200 / layout.vertical;
+            
+            Object.entries(layout.display_mapping).forEach(([displayId, position]) => {
+                const cell = document.createElement('div');
+                cell.style.position = 'absolute';
+                cell.style.left = ((position.horizontal_position - 1) * cellWidth) + 'px';
+                cell.style.top = ((position.vertical_position - 1) * cellHeight) + 'px';
+                cell.style.width = (cellWidth - 4) + 'px';
+                cell.style.height = (cellHeight - 4) + 'px';
+                cell.style.backgroundColor = 'rgba(33, 150, 243, 0.3)';
+                cell.style.border = '2px solid #2196F3';
+                cell.style.borderRadius = '5px';
+                cell.style.display = 'flex';
+                cell.style.alignItems = 'center';
+                cell.style.justifyContent = 'center';
+                cell.style.color = 'white';
+                cell.style.fontWeight = 'bold';
+                cell.textContent = `D${displayId}`;
+                
+                container.appendChild(cell);
+            });
+        }
+
+        async function loadCurrentLayoutInfo() {
+            try {
+                const response = await fetch('/api/layouts/current');
+                const data = await response.json();
+                
+                const infoDiv = document.getElementById('current-layout-info');
+                
+                if (data.success && data.current_layout) {
+                    infoDiv.innerHTML = `
+                        <div class="metric">
+                            <div class="metric-value">${data.current_layout.name}</div>
+                            <div class="metric-label">Active Layout</div>
+                        </div>
+                        <div style="margin-top: 10px;">
+                            <div>Displays: ${data.current_layout.total_displays}</div>
+                            <div>Grid: ${data.current_layout.horizontal} × ${data.current_layout.vertical}</div>
+                            <div>Status: ${data.current_layout.active ? 'Active' : 'Inactive'}</div>
+                        </div>
+                    `;
+                } else {
+                    infoDiv.innerHTML = '<p>No video wall currently configured</p>';
+                }
+            } catch (error) {
+                console.error('Failed to load current layout:', error);
+            }
+        }
+
+        async function applyLayout() {
+            if (!selectedLayout) {
+                showNotification('Please select a layout first', 'warning');
+                return;
+            }
+            
+            try {
+                const response = await fetch('/api/layouts/apply', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ layout_name: selectedLayout.name })
+                });
+                
+                const data = await response.json();
+                
+                if (data.success) {
+                    showNotification('Layout applied successfully', 'success');
+                    loadCurrentLayoutInfo();
+                } else {
+                    showNotification('Failed to apply layout: ' + data.error, 'error');
+                }
+            } catch (error) {
+                showNotification('Layout application error: ' + error.message, 'error');
+            }
+        }
+
+        async function testLayout() {
+            if (!selectedLayout) {
+                showNotification('Please select a layout first', 'warning');
+                return;
+            }
+            
+            showNotification('Testing layout... Check displays for test pattern', 'success');
+            
+            try {
+                const response = await fetch('/api/layouts/test', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ layout_name: selectedLayout.name })
+                });
+                
+                const data = await response.json();
+                
+                if (data.success) {
+                    showNotification('Layout test completed', 'success');
+                } else {
+                    showNotification('Layout test failed: ' + data.error, 'error');
+                }
+            } catch (error) {
+                showNotification('Layout test error: ' + error.message, 'error');
+            }
+        }
+
+        async function disableVideoWall() {
+            if (confirm('Are you sure you want to disable video wall mode?')) {
+                try {
+                    const response = await fetch('/api/layouts/disable', {
+                        method: 'POST'
+                    });
+                    
+                    const data = await response.json();
+                    
+                    if (data.success) {
+                        showNotification('Video wall disabled', 'success');
+                        loadCurrentLayoutInfo();
+                    } else {
+                        showNotification('Failed to disable video wall: ' + data.error, 'error');
+                    }
+                } catch (error) {
+                    showNotification('Disable video wall error: ' + error.message, 'error');
+                }
+            }
+        }
+
+        // Notification System
+        function showNotification(message, type = 'success') {
+            const notification = document.getElementById('notification');
+            notification.textContent = message;
+            notification.className = `notification ${type}`;
+            notification.classList.add('show');
+            
+            setTimeout(() => {
+                notification.classList.remove('show');
+            }, 4000);
+        }
+
+        // Initialize Application
+        function initializeApp() {
+            // Set up initial state
+            updateWizardButtons();
+            
+            // Load any existing configuration
+            loadExistingConfig();
+            
+            // Initialize WebSocket connection for real-time updates
+            initializeWebSocket();
+            
+            showNotification('Video Wall Management System initialized', 'success');
+        }
+
+        async function loadExistingConfig() {
+            try {
+                const response = await fetch('/api/config');
+                const data = await response.json();
+                
+                if (data.success && data.config) {
+                    // Pre-populate forms with existing configuration
+                    if (data.config.magicinfo) {
+                        document.getElementById('magicinfo-enabled').checked = data.config.magicinfo.enabled || false;
+                        document.getElementById('magicinfo-url').value = data.config.magicinfo.server_url || '';
+                        document.getElementById('magicinfo-username').value = data.config.magicinfo.username || '';
+                    }
+                    
+                    if (data.config.optisigns) {
+                        document.getElementById('optisigns-enabled').checked = data.config.optisigns.enabled || false;
+                        document.getElementById('optisigns-url').value = data.config.optisigns.server_url || '';
+                        document.getElementById('optisigns-apikey').value = data.config.optisigns.api_key || '';
+                    }
+                    
+                    // Load discovered displays if available
+                    if (data.config.displays) {
+                        const displays = Object.values(data.config.displays).map((display, index) => ({
+                            ip: display.ip,
+                            model: display.model || 'Samsung LHB55ECH',
+                            serial_number: display.serial_number,
+                            responsive: true,
+                            selected: true,
+                            existing: true
+                        }));
+                        
+                        discoveredDisplays = displays;
+                        displayDiscoveredDevices(displays);
+                    }
+                }
+            } catch (error) {
+                console.error('Failed to load existing configuration:', error);
+            }
+        }
+
+        function initializeWebSocket() {
+            // Initialize Socket.IO connection for real-time updates
+            if (typeof io !== 'undefined') {
+                const socket = io();
+                
+                socket.on('connect', () => {
+                    console.log('Connected to monitoring server');
+                });
+                
+                socket.on('display_status_update', (data) => {
+                    handleDisplayStatusUpdate(data);
+                });
+                
+                socket.on('content_deployed', (data) => {
+                    handleContentDeployment(data);
+                });
+                
+                socket.on('system_alert', (alert) => {
+                    handleSystemAlert(alert);
+                });
+            }
+        }
+
+        function handleDisplayStatusUpdate(data) {
+            // Update display status in real-time
+            if (document.getElementById('monitor').classList.contains('active')) {
+                refreshDisplayStatus();
+            }
+        }
+
+        function handleContentDeployment(data) {
+            showNotification(`Content deployed to ${data.display_ids.length} display(s)`, 'success');
+        }
+
+        function handleSystemAlert(alert) {
+            showNotification(alert.message, alert.level);
+            
+            // Add to alerts list if monitoring tab is active
+            if (document.getElementById('monitor').classList.contains('active')) {
+                loadAlerts();
+            }
+        }
+
+        // Keyboard Shortcuts
+        document.addEventListener('keydown', function(event) {
+            // Ctrl+1,2,3 for tab switching
+            if (event.ctrlKey) {
+                switch (event.key) {
+                    case '1':
+                        event.preventDefault();
+                        switchMainTab('wizard');
+                        break;
+                    case '2':
+                        event.preventDefault();
+                        switchMainTab('monitor');
+                        break;
+                    case '3':
+                        event.preventDefault();
+                        switchMainTab('layout');
+                        break;
+                    case 'r':
+                        event.preventDefault();
+                        if (document.getElementById('monitor').classList.contains('active')) {
+                            refreshDisplayStatus();
+                        }
+                        break;
+                }
+            }
+            
+            // ESC to close modals/notifications
+            if (event.key === 'Escape') {
+                const notification = document.getElementById('notification');
+                if (notification.classList.contains('show')) {
+                    notification.classList.remove('show');
+                }
+            }
+        });
+
+        // Auto-save wizard progress
+        function saveWizardProgress() {
+            const wizardState = {
+                currentStep,
+                discoveredDisplays,
+                selectedLayout,
+                timestamp: Date.now()
+            };
+            
+            try {
+                localStorage.setItem('videoWallWizardState', JSON.stringify(wizardState));
+            } catch (error) {
+                console.warn('Failed to save wizard progress:', error);
+            }
+        }
+
+        function loadWizardProgress() {
+            try {
+                const saved = localStorage.getItem('videoWallWizardState');
+                if (saved) {
+                    const wizardState = JSON.parse(saved);
+                    
+                    // Check if saved state is recent (within last hour)
+                    if (Date.now() - wizardState.timestamp < 3600000) {
+                        if (confirm('Resume previous wizard session?')) {
+                            currentStep = wizardState.currentStep;
+                            discoveredDisplays = wizardState.discoveredDisplays || [];
+                            selectedLayout = wizardState.selectedLayout;
+                            
+                            // Update UI to match loaded state
+                            if (discoveredDisplays.length > 0) {
+                                displayDiscoveredDevices(discoveredDisplays);
+                            }
+                            
+                            // Jump to saved step
+                            if (currentStep > 1) {
+                                for (let i = 1; i < currentStep; i++) {
+                                    document.getElementById(`wizard-step-${i}`).classList.remove('active');
+                                    document.getElementById(`step-${i}`).classList.add('completed');
+                                }
+                                
+                                document.getElementById(`wizard-step-${currentStep}`).classList.add('active');
+                                document.getElementById(`step-${currentStep}`).classList.add('active');
+                                updateWizardButtons();
+                                loadStepContent(currentStep);
+                            }
+                            
+                            showNotification('Wizard session restored', 'success');
+                        }
+                    }
+                }
+            } catch (error) {
+                console.warn('Failed to load wizard progress:', error);
+            }
+        }
+
+        // Enhanced error handling
+        window.addEventListener('error', function(event) {
+            console.error('JavaScript error:', event.error);
+            showNotification('An error occurred. Please refresh the page.', 'error');
+        });
+
+        window.addEventListener('unhandledrejection', function(event) {
+            console.error('Unhandled promise rejection:', event.reason);
+            showNotification('Network error. Please check your connection.', 'error');
+        });
+
+        // Responsive design helpers
+        function checkScreenSize() {
+            const isMobile = window.innerWidth < 768;
+            const isTablet = window.innerWidth < 1024;
+            
+            document.body.classList.toggle('mobile', isMobile);
+            document.body.classList.toggle('tablet', isTablet);
+        }
+
+        window.addEventListener('resize', checkScreenSize);
+
+        // Export functions for global access
+        window.videoWallManager = {
+            switchMainTab,
+            startDiscovery,
+            deployConfiguration,
+            refreshDisplayStatus,
+            showNotification,
+            saveWizardProgress,
+            loadWizardProgress
+        };
+
+        // Initialize when page loads
+        document.addEventListener('DOMContentLoaded', function() {
+            initializeApp();
+            checkScreenSize();
+            loadWizardProgress();
+        });
+
+        // Save progress periodically
+        setInterval(saveWizardProgress, 30000); // Save every 30 seconds
+
+        // Cleanup on page unload
+        window.addEventListener('beforeunload', function() {
+            saveWizardProgress();
+            
+            if (monitoringInterval) {
+                clearInterval(monitoringInterval);
+            }
+        });
+
+        // Development helpers (remove in production)
+        if (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1') {
+            window.addEventListener('keydown', function(event) {
+                // Ctrl+Shift+D for debug mode
+                if (event.ctrlKey && event.shiftKey && event.key === 'D') {
+                    console.log('Debug Info:', {
+                        currentStep,
+                        discoveredDisplays,
+                        selectedLayout,
+                        configurationData,
+                        alertFilter
+                    });
+                }
+            });
+            
+            // Add debug console
+            console.log('%cVideo Wall Management System Debug Mode', 'color: #2196F3; font-size: 16px; font-weight: bold;');
+            console.log('Available functions:', Object.keys(window.videoWallManager));
+            console.log('Use Ctrl+Shift+D to log current state');
+        }
+    </script>
+</body>
+</html>

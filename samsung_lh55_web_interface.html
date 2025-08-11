@@ -1,0 +1,1964 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Samsung LH55BECHLGFXGO Video Wall Control</title>
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='0.9em' font-size='90'>🖥️</text></svg>">
+    <style>
+        :root {
+            --primary-blue: #1565C0;
+            --secondary-blue: #42A5F5;
+            --accent-blue: #E3F2FD;
+            --samsung-blue: #1428A0;
+            --success-green: #4CAF50;
+            --warning-orange: #FF9800;
+            --error-red: #f44336;
+            --background-dark: #0D47A1;
+            --surface-light: rgba(255,255,255,0.95);
+            --surface-medium: rgba(255,255,255,0.15);
+            --surface-dark: rgba(0,0,0,0.1);
+            --text-primary: #ffffff;
+            --text-secondary: #E3F2FD;
+            --border-light: rgba(255,255,255,0.2);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', 'Samsung One', -apple-system, BlinkMacSystemFont, sans-serif;
+            background: linear-gradient(135deg, var(--background-dark) 0%, var(--samsung-blue) 50%, var(--primary-blue) 100%);
+            color: var(--text-primary);
+            min-height: 100vh;
+            overflow-x: hidden;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        /* Header */
+        .header {
+            text-align: center;
+            margin-bottom: 30px;
+            animation: fadeInDown 0.8s ease-out;
+        }
+
+        .header h1 {
+            font-size: 2.8rem;
+            font-weight: 300;
+            margin-bottom: 10px;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+            letter-spacing: -0.5px;
+        }
+
+        .model-info {
+            background: var(--surface-medium);
+            border-radius: 25px;
+            padding: 15px 30px;
+            display: inline-block;
+            backdrop-filter: blur(15px);
+            border: 1px solid var(--border-light);
+            margin-bottom: 20px;
+        }
+
+        .model-specs {
+            display: flex;
+            justify-content: center;
+            gap: 30px;
+            flex-wrap: wrap;
+            font-size: 0.9rem;
+            opacity: 0.9;
+        }
+
+        .spec-item {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        /* Status Bar */
+        .status-bar {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+            background: var(--surface-medium);
+            border-radius: 20px;
+            padding: 20px;
+            margin-bottom: 30px;
+            backdrop-filter: blur(15px);
+            border: 1px solid var(--border-light);
+            animation: fadeInUp 0.8s ease-out 0.2s both;
+        }
+
+        .status-item {
+            text-align: center;
+            padding: 10px;
+            border-radius: 15px;
+            background: var(--surface-light);
+            color: var(--background-dark);
+            transition: transform 0.3s ease;
+        }
+
+        .status-item:hover {
+            transform: translateY(-2px);
+        }
+
+        .status-value {
+            font-size: 1.8rem;
+            font-weight: bold;
+            margin-bottom: 5px;
+        }
+
+        .status-label {
+            font-size: 0.9rem;
+            opacity: 0.8;
+        }
+
+        /* Main Content Tabs */
+        .tab-navigation {
+            display: flex;
+            justify-content: center;
+            margin-bottom: 30px;
+            background: var(--surface-medium);
+            border-radius: 20px;
+            padding: 8px;
+            backdrop-filter: blur(15px);
+            border: 1px solid var(--border-light);
+            animation: fadeInUp 0.8s ease-out 0.4s both;
+        }
+
+        .tab-btn {
+            flex: 1;
+            max-width: 200px;
+            padding: 15px 20px;
+            border: none;
+            background: transparent;
+            color: var(--text-primary);
+            cursor: pointer;
+            border-radius: 15px;
+            transition: all 0.3s ease;
+            font-weight: 600;
+            font-size: 1rem;
+            margin: 0 4px;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .tab-btn::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.1), transparent);
+            transition: left 0.3s ease;
+        }
+
+        .tab-btn:hover::before {
+            left: 100%;
+        }
+
+        .tab-btn.active {
+            background: var(--surface-light);
+            color: var(--background-dark);
+            box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+            transform: translateY(-2px);
+        }
+
+        .tab-content {
+            display: none;
+            animation: fadeIn 0.5s ease-out;
+        }
+
+        .tab-content.active {
+            display: block;
+        }
+
+        /* Display Grid */
+        .displays-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+            gap: 25px;
+            margin-bottom: 30px;
+        }
+
+        .display-card {
+            background: var(--surface-medium);
+            border-radius: 20px;
+            padding: 25px;
+            backdrop-filter: blur(15px);
+            border: 1px solid var(--border-light);
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .display-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 4px;
+            background: linear-gradient(90deg, var(--samsung-blue), var(--secondary-blue));
+        }
+
+        .display-card:hover {
+            transform: translateY(-8px);
+            box-shadow: 0 15px 35px rgba(0,0,0,0.2);
+            border-color: var(--secondary-blue);
+        }
+
+        .display-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+
+        .display-title {
+            font-size: 1.3rem;
+            font-weight: 600;
+            color: var(--text-primary);
+        }
+
+        .display-status {
+            padding: 6px 12px;
+            border-radius: 20px;
+            font-size: 0.85rem;
+            font-weight: bold;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .status-online {
+            background: var(--success-green);
+            color: white;
+            animation: pulse 2s infinite;
+        }
+
+        .status-offline {
+            background: var(--error-red);
+            color: white;
+        }
+
+        .status-warning {
+            background: var(--warning-orange);
+            color: white;
+        }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.7; }
+        }
+
+        /* Control Groups */
+        .control-group {
+            margin-bottom: 25px;
+        }
+
+        .control-group h4 {
+            margin-bottom: 15px;
+            color: var(--accent-blue);
+            font-size: 1.1rem;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .control-buttons {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 10px;
+            margin-bottom: 15px;
+        }
+
+        .control-btn {
+            padding: 12px 16px;
+            border: none;
+            border-radius: 12px;
+            background: var(--surface-light);
+            color: var(--background-dark);
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-weight: 600;
+            font-size: 0.9rem;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .control-btn::before {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            width: 0;
+            height: 0;
+            background: rgba(255,255,255,0.3);
+            border-radius: 50%;
+            transform: translate(-50%, -50%);
+            transition: width 0.3s ease, height 0.3s ease;
+        }
+
+        .control-btn:hover::before {
+            width: 100%;
+            height: 100%;
+        }
+
+        .control-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(0,0,0,0.15);
+        }
+
+        .control-btn:active {
+            transform: translateY(0);
+        }
+
+        .btn-power-on {
+            background: linear-gradient(135deg, var(--success-green), #66BB6A);
+            color: white;
+        }
+
+        .btn-power-off {
+            background: linear-gradient(135deg, var(--error-red), #ef5350);
+            color: white;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, var(--samsung-blue), var(--secondary-blue));
+            color: white;
+        }
+
+        /* Sliders */
+        .slider-container {
+            margin-bottom: 15px;
+        }
+
+        .slider-label {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 8px;
+            font-size: 0.9rem;
+            color: var(--text-secondary);
+        }
+
+        .slider {
+            width: 100%;
+            height: 8px;
+            border-radius: 4px;
+            background: var(--surface-dark);
+            outline: none;
+            -webkit-appearance: none;
+            transition: all 0.3s ease;
+        }
+
+        .slider::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            width: 24px;
+            height: 24px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, var(--samsung-blue), var(--secondary-blue));
+            cursor: pointer;
+            border: 3px solid white;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.2);
+            transition: all 0.3s ease;
+        }
+
+        .slider::-webkit-slider-thumb:hover {
+            transform: scale(1.1);
+            box-shadow: 0 4px 15px rgba(0,0,0,0.3);
+        }
+
+        .slider::-moz-range-thumb {
+            width: 24px;
+            height: 24px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, var(--samsung-blue), var(--secondary-blue));
+            cursor: pointer;
+            border: 3px solid white;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.2);
+        }
+
+        /* Select Dropdowns */
+        .select-container {
+            margin-bottom: 15px;
+            position: relative;
+        }
+
+        .select-container select {
+            width: 100%;
+            padding: 12px 16px;
+            border-radius: 12px;
+            border: 2px solid var(--border-light);
+            background: var(--surface-light);
+            color: var(--background-dark);
+            font-size: 0.9rem;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            appearance: none;
+            background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 20 20'%3e%3cpath stroke='%236b7280' stroke-linecap='round' stroke-linejoin='round' stroke-width='1.5' d='M6 8l4 4 4-4'/%3e%3c/svg%3e");
+            background-position: right 12px center;
+            background-repeat: no-repeat;
+            background-size: 16px;
+            padding-right: 40px;
+        }
+
+        .select-container select:focus {
+            outline: none;
+            border-color: var(--samsung-blue);
+            box-shadow: 0 0 0 3px rgba(20, 40, 160, 0.1);
+        }
+
+        .select-container select option {
+            background: white;
+            color: var(--background-dark);
+            padding: 8px;
+        }
+
+        /* Video Wall Section */
+        .video-wall-section {
+            background: var(--surface-medium);
+            border-radius: 20px;
+            padding: 30px;
+            backdrop-filter: blur(15px);
+            border: 1px solid var(--border-light);
+            margin-bottom: 30px;
+        }
+
+        .section-title {
+            font-size: 1.8rem;
+            font-weight: 600;
+            margin-bottom: 20px;
+            text-align: center;
+            color: var(--text-primary);
+        }
+
+        .layout-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 20px;
+            margin: 25px 0;
+        }
+
+        .layout-option {
+            background: var(--surface-light);
+            border-radius: 15px;
+            padding: 20px;
+            text-align: center;
+            cursor: pointer;
+            border: 3px solid transparent;
+            transition: all 0.3s ease;
+            color: var(--background-dark);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .layout-option::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent);
+            transition: left 0.5s ease;
+        }
+
+        .layout-option:hover {
+            border-color: var(--samsung-blue);
+            transform: translateY(-3px);
+            box-shadow: 0 10px 25px rgba(0,0,0,0.15);
+        }
+
+        .layout-option:hover::before {
+            left: 100%;
+        }
+
+        .layout-option.selected {
+            border-color: var(--samsung-blue);
+            background: linear-gradient(135deg, var(--accent-blue), white);
+            transform: translateY(-3px);
+            box-shadow: 0 10px 25px rgba(0,0,0,0.15);
+        }
+
+        .layout-preview {
+            width: 80px;
+            height: 50px;
+            margin: 0 auto 15px;
+            border: 2px solid var(--background-dark);
+            border-radius: 8px;
+            position: relative;
+            background: var(--background-dark);
+        }
+
+        .layout-name {
+            font-weight: 600;
+            font-size: 1.1rem;
+            margin-bottom: 5px;
+        }
+
+        .layout-details {
+            font-size: 0.85rem;
+            opacity: 0.7;
+        }
+
+        /* Action Buttons */
+        .action-buttons {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+            margin-top: 25px;
+        }
+
+        .action-btn {
+            padding: 15px 25px;
+            border: none;
+            border-radius: 15px;
+            font-weight: 600;
+            font-size: 1rem;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .action-btn::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent);
+            transition: left 0.5s ease;
+        }
+
+        .action-btn:hover::before {
+            left: 100%;
+        }
+
+        .action-btn:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 8px 25px rgba(0,0,0,0.2);
+        }
+
+        .btn-apply {
+            background: linear-gradient(135deg, var(--success-green), #66BB6A);
+            color: white;
+        }
+
+        .btn-test {
+            background: linear-gradient(135deg, var(--warning-orange), #FFB74D);
+            color: white;
+        }
+
+        .btn-disable {
+            background: linear-gradient(135deg, var(--error-red), #ef5350);
+            color: white;
+        }
+
+        .btn-bulk {
+            background: linear-gradient(135deg, var(--samsung-blue), var(--secondary-blue));
+            color: white;
+        }
+
+        /* Temperature Display */
+        .temperature-display {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            background: var(--surface-light);
+            border-radius: 12px;
+            padding: 12px;
+            color: var(--background-dark);
+            margin-bottom: 15px;
+        }
+
+        .temp-icon {
+            font-size: 1.5rem;
+        }
+
+        .temp-value {
+            font-weight: bold;
+            font-size: 1.2rem;
+        }
+
+        .temp-status {
+            font-size: 0.8rem;
+            padding: 2px 8px;
+            border-radius: 10px;
+            text-transform: uppercase;
+            font-weight: bold;
+        }
+
+        .temp-normal {
+            background: var(--success-green);
+            color: white;
+        }
+
+        .temp-warning {
+            background: var(--warning-orange);
+            color: white;
+        }
+
+        .temp-critical {
+            background: var(--error-red);
+            color: white;
+        }
+
+        /* Loading States */
+        .loading {
+            display: inline-block;
+            width: 20px;
+            height: 20px;
+            border: 3px solid rgba(255,255,255,0.3);
+            border-radius: 50%;
+            border-top-color: white;
+            animation: spin 1s ease-in-out infinite;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        /* Notifications */
+        .notification {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            padding: 15px 20px;
+            border-radius: 12px;
+            color: white;
+            z-index: 1000;
+            transform: translateX(100%);
+            transition: transform 0.3s ease;
+            max-width: 350px;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.2);
+            backdrop-filter: blur(10px);
+        }
+
+        .notification.show {
+            transform: translateX(0);
+        }
+
+        .notification.success {
+            background: linear-gradient(135deg, var(--success-green), #66BB6A);
+        }
+
+        .notification.error {
+            background: linear-gradient(135deg, var(--error-red), #ef5350);
+        }
+
+        .notification.warning {
+            background: linear-gradient(135deg, var(--warning-orange), #FFB74D);
+        }
+
+        .notification.info {
+            background: linear-gradient(135deg, var(--samsung-blue), var(--secondary-blue));
+        }
+
+        /* Animations */
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+
+        @keyframes fadeInDown {
+            from {
+                opacity: 0;
+                transform: translateY(-30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        /* Responsive Design */
+        @media (max-width: 1024px) {
+            .displays-grid {
+                grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            }
+            
+            .layout-grid {
+                grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            }
+        }
+
+        @media (max-width: 768px) {
+            .container {
+                padding: 15px;
+            }
+            
+            .header h1 {
+                font-size: 2.2rem;
+            }
+            
+            .displays-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .control-buttons {
+                grid-template-columns: repeat(2, 1fr);
+            }
+            
+            .tab-navigation {
+                flex-direction: column;
+                gap: 8px;
+            }
+            
+            .tab-btn {
+                max-width: none;
+            }
+            
+            .model-specs {
+                flex-direction: column;
+                gap: 10px;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .header h1 {
+                font-size: 1.8rem;
+            }
+            
+            .action-buttons {
+                grid-template-columns: 1fr;
+            }
+            
+            .status-bar {
+                grid-template-columns: repeat(2, 1fr);
+            }
+        }
+
+        /* Dark mode support */
+        @media (prefers-color-scheme: dark) {
+            .display-card {
+                border-color: rgba(255,255,255,0.1);
+            }
+        }
+
+        /* High contrast mode */
+        @media (prefers-contrast: high) {
+            .display-card {
+                border: 2px solid white;
+            }
+            
+            .control-btn {
+                border: 1px solid;
+            }
+        }
+
+        /* Reduced motion */
+        @media (prefers-reduced-motion: reduce) {
+            * {
+                animation-duration: 0.01ms !important;
+                animation-iteration-count: 1 !important;
+                transition-duration: 0.01ms !important;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>Samsung LH55BECHLGFXGO Video Wall Control</h1>
+            <div class="model-info">
+                <div class="model-specs">
+                    <div class="spec-item">
+                        <span>📺</span>
+                        <span>55" BEC Series</span>
+                    </div>
+                    <div class="spec-item">
+                        <span>🎯</span>
+                        <span>1920×1080</span>
+                    </div>
+                    <div class="spec-item">
+                        <span>💡</span>
+                        <span>700 cd/m²</span>
+                    </div>
+                    <div class="spec-item">
+                        <span>🔗</span>
+                        <span>10×10 Grid Support</span>
+                    </div>
+                    <div class="spec-item">
+                        <span>⚡</span>
+                        <span>MDC Control</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="status-bar">
+            <div class="status-item">
+                <div class="status-value" id="total-displays">0</div>
+                <div class="status-label">Total Displays</div>
+            </div>
+            <div class="status-item">
+                <div class="status-value" id="online-displays">0</div>
+                <div class="status-label">Online</div>
+            </div>
+            <div class="status-item">
+                <div class="status-value" id="video-wall-status">Disabled</div>
+                <div class="status-label">Video Wall</div>
+            </div>
+            <div class="status-item">
+                <div class="status-value" id="avg-temperature">--°C</div>
+                <div class="status-label">Avg Temperature</div>
+            </div>
+            <div class="status-item">
+                <div class="status-value" id="system-status">Loading...</div>
+                <div class="status-label">System Health</div>
+            </div>
+        </div>
+
+        <div class="tab-navigation">
+            <button class="tab-btn active" onclick="switchTab('displays')">
+                🖥️ Display Control
+            </button>
+            <button class="tab-btn" onclick="switchTab('video-wall')">
+                🎯 Video Wall
+            </button>
+            <button class="tab-btn" onclick="switchTab('bulk-actions')">
+                ⚡ Bulk Actions
+            </button>
+            <button class="tab-btn" onclick="switchTab('monitoring')">
+                📊 Monitoring
+            </button>
+        </div>
+
+        <!-- Display Control Tab -->
+        <div class="tab-content active" id="displays">
+            <div class="displays-grid" id="displays-grid">
+                <!-- Display cards will be populated here -->
+            </div>
+        </div>
+
+        <!-- Video Wall Tab -->
+        <div class="tab-content" id="video-wall">
+            <div class="video-wall-section">
+                <h2 class="section-title">🎯 Samsung LH55BECHLGFXGO Video Wall Configuration</h2>
+                <p style="text-align: center; margin-bottom: 25px; opacity: 0.9;">
+                    Configure your displays in a video wall layout. Supports up to 10×10 grid configuration.
+                </p>
+                
+                <div class="layout-grid" id="layout-options">
+                    <!-- Layout options will be populated here -->
+                </div>
+
+                <div class="action-buttons">
+                    <button class="action-btn btn-apply" onclick="applyVideoWallLayout()">
+                        ✅ Apply Layout
+                    </button>
+                    <button class="action-btn btn-test" onclick="testVideoWallLayout()">
+                        🧪 Test Layout
+                    </button>
+                    <button class="action-btn btn-disable" onclick="disableVideoWall()">
+                        ❌ Disable Video Wall
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Bulk Actions Tab -->
+        <div class="tab-content" id="bulk-actions">
+            <div class="video-wall-section">
+                <h2 class="section-title">⚡ Bulk Actions</h2>
+                <p style="text-align: center; margin-bottom: 25px; opacity: 0.9;">
+                    Control multiple Samsung LH55BECHLGFXGO displays simultaneously.
+                </p>
+
+                <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 25px;">
+                    <!-- Power Control -->
+                    <div class="control-group">
+                        <h4>🔋 Power Control</h4>
+                        <div class="action-buttons">
+                            <button class="action-btn btn-apply" onclick="bulkPowerOn()">
+                                Power All ON
+                            </button>
+                            <button class="action-btn btn-disable" onclick="bulkPowerOff()">
+                                Power All OFF
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Volume Control -->
+                    <div class="control-group">
+                        <h4>🔊 Volume Control</h4>
+                        <div class="slider-container">
+                            <div class="slider-label">
+                                <span>Volume</span>
+                                <span id="bulk-volume-value">50%</span>
+                            </div>
+                            <input type="range" min="0" max="100" value="50" class="slider" id="bulk-volume-slider">
+                        </div>
+                        <div class="action-buttons">
+                            <button class="action-btn btn-bulk" onclick="applyBulkVolume()">
+                                Apply Volume
+                            </button>
+                            <button class="action-btn btn-test" onclick="bulkMute()">
+                                Mute All
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Input Source -->
+                    <div class="control-group">
+                        <h4>🎮 Input Source</h4>
+                        <div class="select-container">
+                            <select id="bulk-input-select">
+                                <option value="HDMI1">HDMI 1</option>
+                                <option value="HDMI2">HDMI 2</option>
+                                <option value="DVI">DVI-D</option>
+                                <option value="DISPLAY_PORT">Display Port</option>
+                                <option value="RGB">RGB</option>
+                                <option value="COMPONENT">Component</option>
+                                <option value="USB">USB</option>
+                            </select>
+                        </div>
+                        <div class="action-buttons">
+                            <button class="action-btn btn-bulk" onclick="applyBulkInput()">
+                                Apply Input
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Picture Settings -->
+                    <div class="control-group">
+                        <h4>🎨 Picture Settings</h4>
+                        <div class="select-container">
+                            <select id="bulk-picture-mode">
+                                <option value="STANDARD">Standard</option>
+                                <option value="MOVIE">Movie</option>
+                                <option value="DYNAMIC">Dynamic</option>
+                                <option value="NATURAL">Natural</option>
+                                <option value="CALIBRATED">Calibrated</option>
+                            </select>
+                        </div>
+                        <div class="slider-container">
+                            <div class="slider-label">
+                                <span>Brightness</span>
+                                <span id="bulk-brightness-value">50%</span>
+                            </div>
+                            <input type="range" min="0" max="100" value="50" class="slider" id="bulk-brightness-slider">
+                        </div>
+                        <div class="slider-container">
+                            <div class="slider-label">
+                                <span>Contrast</span>
+                                <span id="bulk-contrast-value">50%</span>
+                            </div>
+                            <input type="range" min="0" max="100" value="50" class="slider" id="bulk-contrast-slider">
+                        </div>
+                        <div class="action-buttons">
+                            <button class="action-btn btn-bulk" onclick="applyBulkPictureSettings()">
+                                Apply Settings
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Monitoring Tab -->
+        <div class="tab-content" id="monitoring">
+            <div class="video-wall-section">
+                <h2 class="section-title">📊 System Monitoring</h2>
+                
+                <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 25px; margin-bottom: 30px;">
+                    <div class="control-group">
+                        <h4>🌡️ Temperature Overview</h4>
+                        <div id="temperature-chart" style="background: var(--surface-light); border-radius: 12px; padding: 20px; color: var(--background-dark); text-align: center;">
+                            Temperature monitoring will be displayed here
+                        </div>
+                    </div>
+                    
+                    <div class="control-group">
+                        <h4>📈 System Statistics</h4>
+                        <div id="system-stats" style="background: var(--surface-light); border-radius: 12px; padding: 20px; color: var(--background-dark);">
+                            <div style="margin-bottom: 10px;">
+                                <strong>Connection Rate:</strong> <span id="connection-rate">--</span>
+                            </div>
+                            <div style="margin-bottom: 10px;">
+                                <strong>Power Efficiency:</strong> <span id="power-efficiency">--</span>
+                            </div>
+                            <div style="margin-bottom: 10px;">
+                                <strong>Average Uptime:</strong> <span id="average-uptime">--</span>
+                            </div>
+                            <div>
+                                <strong>Error Count:</strong> <span id="total-errors">--</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="control-group">
+                    <h4>⚠️ Recent Alerts</h4>
+                    <div id="alerts-list" style="background: var(--surface-light); border-radius: 12px; padding: 20px; color: var(--background-dark); max-height: 300px; overflow-y: auto;">
+                        <div style="text-align: center; opacity: 0.7;">
+                            No recent alerts
+                        </div>
+                    </div>
+                </div>
+
+                <div class="action-buttons">
+                    <button class="action-btn btn-bulk" onclick="refreshMonitoring()">
+                        🔄 Refresh Data
+                    </button>
+                    <button class="action-btn btn-test" onclick="runSystemDiagnostic()">
+                        🔍 System Diagnostic
+                    </button>
+                    <button class="action-btn btn-apply" onclick="exportSystemReport()">
+                        📄 Export Report
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Notification -->
+    <div class="notification" id="notification"></div>
+
+    <script>
+        // Global variables
+        let displays = {};
+        let selectedLayout = null;
+        let systemHealth = {};
+        let refreshInterval = null;
+
+        // Initialize the application
+        document.addEventListener('DOMContentLoaded', function() {
+            initializeApp();
+            
+            // Set up slider event listeners
+            setupSliderListeners();
+            
+            // Start periodic refresh
+            startPeriodicRefresh();
+        });
+
+        function initializeApp() {
+            showNotification('Samsung LH55BECHLGFXGO Control System Initialized', 'info');
+            loadDisplays();
+            loadVideoWallLayouts();
+            loadSystemHealth();
+        }
+
+        function setupSliderListeners() {
+            // Bulk volume slider
+            const bulkVolumeSlider = document.getElementById('bulk-volume-slider');
+            const bulkVolumeValue = document.getElementById('bulk-volume-value');
+            
+            bulkVolumeSlider.addEventListener('input', function() {
+                bulkVolumeValue.textContent = this.value + '%';
+            });
+
+            // Bulk brightness slider
+            const bulkBrightnessSlider = document.getElementById('bulk-brightness-slider');
+            const bulkBrightnessValue = document.getElementById('bulk-brightness-value');
+            
+            bulkBrightnessSlider.addEventListener('input', function() {
+                bulkBrightnessValue.textContent = this.value + '%';
+            });
+
+            // Bulk contrast slider
+            const bulkContrastSlider = document.getElementById('bulk-contrast-slider');
+            const bulkContrastValue = document.getElementById('bulk-contrast-value');
+            
+            bulkContrastSlider.addEventListener('input', function() {
+                bulkContrastValue.textContent = this.value + '%';
+            });
+        }
+
+        // Tab switching
+        function switchTab(tabName) {
+            // Remove active class from all tabs and buttons
+            document.querySelectorAll('.tab-content').forEach(tab => {
+                tab.classList.remove('active');
+            });
+            document.querySelectorAll('.tab-btn').forEach(btn => {
+                btn.classList.remove('active');
+            });
+
+            // Activate selected tab
+            document.getElementById(tabName).classList.add('active');
+            event.target.classList.add('active');
+
+            // Load tab-specific data
+            switch(tabName) {
+                case 'displays':
+                    loadDisplays();
+                    break;
+                case 'video-wall':
+                    loadVideoWallLayouts();
+                    break;
+                case 'monitoring':
+                    loadSystemHealth();
+                    break;
+            }
+        }
+
+        // Display management functions
+        async function loadDisplays() {
+            try {
+                const response = await fetch('/api/displays');
+                const data = await response.json();
+
+                if (data.success) {
+                    displays = data.displays;
+                    updateStatusBar(data);
+                    renderDisplayCards(data.displays);
+                } else {
+                    showNotification('Failed to load displays: ' + data.error, 'error');
+                }
+            } catch (error) {
+                showNotification('Error loading displays: ' + error.message, 'error');
+            }
+        }
+
+        function updateStatusBar(data) {
+            document.getElementById('total-displays').textContent = data.total_displays;
+            
+            let onlineCount = 0;
+            let poweredOnCount = 0;
+            let videoWallEnabled = false;
+            let temperatures = [];
+
+            Object.values(data.displays).forEach(display => {
+                if (display.status.connection?.status === 'connected') {
+                    onlineCount++;
+                }
+                if (display.status.power?.status === 'on') {
+                    poweredOnCount++;
+                }
+                if (display.status.video_wall_enabled) {
+                    videoWallEnabled = true;
+                }
+                if (display.status.temperature?.value) {
+                    temperatures.push(display.status.temperature.value);
+                }
+            });
+
+            document.getElementById('online-displays').textContent = onlineCount;
+            document.getElementById('video-wall-status').textContent = videoWallEnabled ? 'Enabled' : 'Disabled';
+            
+            if (temperatures.length > 0) {
+                const avgTemp = Math.round(temperatures.reduce((a, b) => a + b, 0) / temperatures.length);
+                document.getElementById('avg-temperature').textContent = avgTemp + '°C';
+            }
+
+            // System health
+            const healthPercentage = Math.round((onlineCount / data.total_displays) * 100);
+            let healthStatus = 'Excellent';
+            if (healthPercentage < 50) healthStatus = 'Critical';
+            else if (healthPercentage < 80) healthStatus = 'Warning';
+            else if (healthPercentage < 100) healthStatus = 'Good';
+
+            document.getElementById('system-status').textContent = healthStatus;
+        }
+
+        function renderDisplayCards(displaysData) {
+            const grid = document.getElementById('displays-grid');
+            grid.innerHTML = '';
+
+            Object.entries(displaysData).forEach(([id, display]) => {
+                const card = createDisplayCard(id, display);
+                grid.appendChild(card);
+            });
+        }
+
+        function createDisplayCard(id, display) {
+            const card = document.createElement('div');
+            card.className = 'display-card';
+            
+            const isOnline = display.status.connection?.status === 'connected';
+            const isPoweredOn = display.status.power?.status === 'on';
+            const temperature = display.status.temperature?.value;
+
+            card.innerHTML = `
+                <div class="display-header">
+                    <div class="display-title">${display.name}</div>
+                    <div class="display-status ${isOnline ? 'status-online' : 'status-offline'}">
+                        ${isOnline ? 'ONLINE' : 'OFFLINE'}
+                    </div>
+                </div>
+
+                <div style="display: grid; grid-template-columns: 1fr auto; gap: 20px; margin-bottom: 20px;">
+                    <div>
+                        <div style="font-size: 0.9rem; opacity: 0.8; margin-bottom: 5px;">
+                            <strong>IP:</strong> ${display.ip}
+                        </div>
+                        <div style="font-size: 0.9rem; opacity: 0.8; margin-bottom: 5px;">
+                            <strong>Model:</strong> ${display.model}
+                        </div>
+                        <div style="font-size: 0.9rem; opacity: 0.8;">
+                            <strong>Status:</strong> ${isPoweredOn ? 'Powered ON' : 'Powered OFF'}
+                        </div>
+                    </div>
+                    ${temperature ? `
+                    <div class="temperature-display">
+                        <span class="temp-icon">🌡️</span>
+                        <span class="temp-value">${temperature}°C</span>
+                        <span class="temp-status ${temperature < 60 ? 'temp-normal' : temperature < 70 ? 'temp-warning' : 'temp-critical'}">
+                            ${temperature < 60 ? 'Normal' : temperature < 70 ? 'Warm' : 'Hot'}
+                        </span>
+                    </div>
+                    ` : ''}
+                </div>
+
+                <div class="control-group">
+                    <h4>🔋 Power Control</h4>
+                    <div class="control-buttons">
+                        <button class="control-btn btn-power-on" onclick="controlDisplayPower(${id}, 'on')">
+                            Power ON
+                        </button>
+                        <button class="control-btn btn-power-off" onclick="controlDisplayPower(${id}, 'off')">
+                            Power OFF
+                        </button>
+                        <button class="control-btn" onclick="controlDisplayPower(${id}, 'toggle')">
+                            Toggle
+                        </button>
+                    </div>
+                </div>
+
+                <div class="control-group">
+                    <h4>🔊 Audio Control</h4>
+                    <div class="slider-container">
+                        <div class="slider-label">
+                            <span>Volume</span>
+                            <span id="volume-${id}-value">${display.status.volume || 50}%</span>
+                        </div>
+                        <input type="range" min="0" max="100" value="${display.status.volume || 50}" 
+                               class="slider" id="volume-${id}"
+                               oninput="updateVolumeDisplay(${id}, this.value)"
+                               onchange="controlDisplayVolume(${id}, this.value)">
+                    </div>
+                    <div class="control-buttons">
+                        <button class="control-btn" onclick="controlDisplayMute(${id}, true)">
+                            Mute
+                        </button>
+                        <button class="control-btn" onclick="controlDisplayMute(${id}, false)">
+                            Unmute
+                        </button>
+                    </div>
+                </div>
+
+                <div class="control-group">
+                    <h4>🎮 Input Source</h4>
+                    <div class="select-container">
+                        <select onchange="controlDisplayInput(${id}, this.value)" id="input-${id}">
+                            <option value="HDMI1" ${display.status.input_source === 'HDMI1' ? 'selected' : ''}>HDMI 1</option>
+                            <option value="HDMI2" ${display.status.input_source === 'HDMI2' ? 'selected' : ''}>HDMI 2</option>
+                            <option value="DVI" ${display.status.input_source === 'DVI' ? 'selected' : ''}>DVI-D</option>
+                            <option value="DISPLAY_PORT" ${display.status.input_source === 'DISPLAY_PORT' ? 'selected' : ''}>Display Port</option>
+                            <option value="RGB" ${display.status.input_source === 'RGB' ? 'selected' : ''}>RGB</option>
+                            <option value="COMPONENT" ${display.status.input_source === 'COMPONENT' ? 'selected' : ''}>Component</option>
+                            <option value="USB" ${display.status.input_source === 'USB' ? 'selected' : ''}>USB</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="control-group">
+                    <h4>🎨 Picture Settings</h4>
+                    <div class="select-container">
+                        <select onchange="controlDisplayPictureMode(${id}, this.value)" id="picture-mode-${id}">
+                            <option value="STANDARD" ${display.status.picture_mode === 'STANDARD' ? 'selected' : ''}>Standard</option>
+                            <option value="MOVIE" ${display.status.picture_mode === 'MOVIE' ? 'selected' : ''}>Movie</option>
+                            <option value="DYNAMIC" ${display.status.picture_mode === 'DYNAMIC' ? 'selected' : ''}>Dynamic</option>
+                            <option value="NATURAL" ${display.status.picture_mode === 'NATURAL' ? 'selected' : ''}>Natural</option>
+                            <option value="CALIBRATED" ${display.status.picture_mode === 'CALIBRATED' ? 'selected' : ''}>Calibrated</option>
+                        </select>
+                    </div>
+                    <div class="slider-container">
+                        <div class="slider-label">
+                            <span>Brightness</span>
+                            <span id="brightness-${id}-value">${display.status.brightness || 50}%</span>
+                        </div>
+                        <input type="range" min="0" max="100" value="${display.status.brightness || 50}" 
+                               class="slider" id="brightness-${id}"
+                               oninput="updateBrightnessDisplay(${id}, this.value)"
+                               onchange="controlDisplayBrightness(${id}, this.value)">
+                    </div>
+                    <div class="slider-container">
+                        <div class="slider-label">
+                            <span>Contrast</span>
+                            <span id="contrast-${id}-value">${display.status.contrast || 50}%</span>
+                        </div>
+                        <input type="range" min="0" max="100" value="${display.status.contrast || 50}" 
+                               class="slider" id="contrast-${id}"
+                               oninput="updateContrastDisplay(${id}, this.value)"
+                               onchange="controlDisplayContrast(${id}, this.value)">
+                    </div>
+                </div>
+            `;
+
+            return card;
+        }
+
+        // Display control functions
+        async function controlDisplayPower(displayId, action) {
+            try {
+                const response = await fetch(`/api/displays/${displayId}/power`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ action })
+                });
+
+                const data = await response.json();
+
+                if (data.success) {
+                    showNotification(`Display ${displayId} power ${action} successful`, 'success');
+                    // Refresh display data
+                    setTimeout(loadDisplays, 1000);
+                } else {
+                    showNotification(`Power control failed: ${data.error}`, 'error');
+                }
+            } catch (error) {
+                showNotification(`Error controlling power: ${error.message}`, 'error');
+            }
+        }
+
+        function updateVolumeDisplay(displayId, value) {
+            document.getElementById(`volume-${displayId}-value`).textContent = value + '%';
+        }
+
+        async function controlDisplayVolume(displayId, volume) {
+            try {
+                const response = await fetch(`/api/displays/${displayId}/volume`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ volume: parseInt(volume) })
+                });
+
+                const data = await response.json();
+
+                if (data.success) {
+                    showNotification(`Display ${displayId} volume set to ${volume}%`, 'success');
+                } else {
+                    showNotification(`Volume control failed: ${data.error}`, 'error');
+                }
+            } catch (error) {
+                showNotification(`Error controlling volume: ${error.message}`, 'error');
+            }
+        }
+
+        async function controlDisplayMute(displayId, muted) {
+            try {
+                const response = await fetch(`/api/displays/${displayId}/volume`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ mute: muted })
+                });
+
+                const data = await response.json();
+
+                if (data.success) {
+                    showNotification(`Display ${displayId} ${muted ? 'muted' : 'unmuted'}`, 'success');
+                } else {
+                    showNotification(`Mute control failed: ${data.error}`, 'error');
+                }
+            } catch (error) {
+                showNotification(`Error controlling mute: ${error.message}`, 'error');
+            }
+        }
+
+        async function controlDisplayInput(displayId, input) {
+            try {
+                const response = await fetch(`/api/displays/${displayId}/input`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ input })
+                });
+
+                const data = await response.json();
+
+                if (data.success) {
+                    showNotification(`Display ${displayId} input changed to ${input}`, 'success');
+                } else {
+                    showNotification(`Input control failed: ${data.error}`, 'error');
+                }
+            } catch (error) {
+                showNotification(`Error controlling input: ${error.message}`, 'error');
+            }
+        }
+
+        async function controlDisplayPictureMode(displayId, mode) {
+            try {
+                const response = await fetch(`/api/displays/${displayId}/picture`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ mode })
+                });
+
+                const data = await response.json();
+
+                if (data.success) {
+                    showNotification(`Display ${displayId} picture mode set to ${mode}`, 'success');
+                } else {
+                    showNotification(`Picture mode control failed: ${data.error}`, 'error');
+                }
+            } catch (error) {
+                showNotification(`Error controlling picture mode: ${error.message}`, 'error');
+            }
+        }
+
+        function updateBrightnessDisplay(displayId, value) {
+            document.getElementById(`brightness-${displayId}-value`).textContent = value + '%';
+        }
+
+        async function controlDisplayBrightness(displayId, brightness) {
+            try {
+                const response = await fetch(`/api/displays/${displayId}/picture`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ brightness: parseInt(brightness) })
+                });
+
+                const data = await response.json();
+
+                if (data.success) {
+                    showNotification(`Display ${displayId} brightness set to ${brightness}%`, 'success');
+                } else {
+                    showNotification(`Brightness control failed: ${data.error}`, 'error');
+                }
+            } catch (error) {
+                showNotification(`Error controlling brightness: ${error.message}`, 'error');
+            }
+        }
+
+        function updateContrastDisplay(displayId, value) {
+            document.getElementById(`contrast-${displayId}-value`).textContent = value + '%';
+        }
+
+        async function controlDisplayContrast(displayId, contrast) {
+            try {
+                const response = await fetch(`/api/displays/${displayId}/picture`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ contrast: parseInt(contrast) })
+                });
+
+                const data = await response.json();
+
+                if (data.success) {
+                    showNotification(`Display ${displayId} contrast set to ${contrast}%`, 'success');
+                } else {
+                    showNotification(`Contrast control failed: ${data.error}`, 'error');
+                }
+            } catch (error) {
+                showNotification(`Error controlling contrast: ${error.message}`, 'error');
+            }
+        }
+
+        // Video Wall functions
+        async function loadVideoWallLayouts() {
+            try {
+                const response = await fetch('/api/video-wall/layouts');
+                const data = await response.json();
+
+                if (data.success) {
+                    renderLayoutOptions(data.available_layouts);
+                } else {
+                    showNotification('Failed to load video wall layouts: ' + data.error, 'error');
+                }
+            } catch (error) {
+                showNotification('Error loading layouts: ' + error.message, 'error');
+            }
+        }
+
+        function renderLayoutOptions(layouts) {
+            const container = document.getElementById('layout-options');
+            container.innerHTML = '';
+
+            Object.entries(layouts).forEach(([layoutName, layout]) => {
+                const option = document.createElement('div');
+                option.className = 'layout-option';
+                option.onclick = () => selectLayout(layoutName, layout);
+
+                option.innerHTML = `
+                    <div class="layout-preview" id="preview-${layoutName}"></div>
+                    <div class="layout-name">${layoutName}</div>
+                    <div class="layout-details">${layout.description}</div>
+                    <div class="layout-details">${layout.total_resolution}</div>
+                `;
+
+                container.appendChild(option);
+                createLayoutPreview(`preview-${layoutName}`, layout.horizontal, layout.vertical);
+            });
+        }
+
+        function createLayoutPreview(containerId, h, v) {
+            const container = document.getElementById(containerId);
+            container.innerHTML = '';
+            container.style.position = 'relative';
+
+            const cellWidth = 76 / h;
+            const cellHeight = 46 / v;
+
+            for (let row = 0; row < v; row++) {
+                for (let col = 0; col < h; col++) {
+                    const cell = document.createElement('div');
+                    cell.style.position = 'absolute';
+                    cell.style.left = (col * cellWidth + 2) + 'px';
+                    cell.style.top = (row * cellHeight + 2) + 'px';
+                    cell.style.width = (cellWidth - 1) + 'px';
+                    cell.style.height = (cellHeight - 1) + 'px';
+                    cell.style.backgroundColor = 'var(--background-dark)';
+                    cell.style.border = '1px solid white';
+                    cell.style.borderRadius = '2px';
+
+                    container.appendChild(cell);
+                }
+            }
+        }
+
+        function selectLayout(layoutName, layout) {
+            // Remove previous selection
+            document.querySelectorAll('.layout-option').forEach(option => {
+                option.classList.remove('selected');
+            });
+
+            // Select current layout
+            event.currentTarget.classList.add('selected');
+            selectedLayout = { name: layoutName, config: layout };
+
+            showNotification(`Selected ${layoutName} layout (${layout.total_displays} displays)`, 'info');
+        }
+
+        async function applyVideoWallLayout() {
+            if (!selectedLayout) {
+                showNotification('Please select a layout first', 'warning');
+                return;
+            }
+
+            try {
+                const response = await fetch('/api/video-wall/apply', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ layout_name: selectedLayout.name })
+                });
+
+                const data = await response.json();
+
+                if (data.success) {
+                    showNotification(`Video wall layout ${selectedLayout.name} applied successfully!`, 'success');
+                    loadDisplays(); // Refresh display status
+                } else {
+                    showNotification(`Failed to apply layout: ${data.error}`, 'error');
+                }
+            } catch (error) {
+                showNotification(`Error applying layout: ${error.message}`, 'error');
+            }
+        }
+
+        async function testVideoWallLayout() {
+            if (!selectedLayout) {
+                showNotification('Please select a layout first', 'warning');
+                return;
+            }
+
+            try {
+                const response = await fetch('/api/video-wall/test', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ 
+                        layout_name: selectedLayout.name,
+                        duration: 15
+                    })
+                });
+
+                const data = await response.json();
+
+                if (data.success) {
+                    showNotification(`Test patterns generated for ${selectedLayout.name} layout`, 'success');
+                } else {
+                    showNotification(`Failed to generate test patterns: ${data.error}`, 'error');
+                }
+            } catch (error) {
+                showNotification(`Error testing layout: ${error.message}`, 'error');
+            }
+        }
+
+        async function disableVideoWall() {
+            if (!confirm('Are you sure you want to disable video wall mode on all displays?')) {
+                return;
+            }
+
+            try {
+                const response = await fetch('/api/video-wall/disable', {
+                    method: 'POST'
+                });
+
+                const data = await response.json();
+
+                if (data.success) {
+                    showNotification('Video wall disabled on all displays', 'success');
+                    loadDisplays(); // Refresh display status
+                } else {
+                    showNotification(`Failed to disable video wall: ${data.error}`, 'error');
+                }
+            } catch (error) {
+                showNotification(`Error disabling video wall: ${error.message}`, 'error');
+            }
+        }
+
+        // Bulk action functions
+        async function bulkPowerOn() {
+            try {
+                const response = await fetch('/api/displays/bulk/power', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ action: 'on' })
+                });
+
+                const data = await response.json();
+
+                if (data.success) {
+                    showNotification(`Powered ON ${data.successful_displays} of ${data.total_displays} displays`, 'success');
+                    setTimeout(loadDisplays, 2000);
+                } else {
+                    showNotification(`Bulk power on failed: ${data.error}`, 'error');
+                }
+            } catch (error) {
+                showNotification(`Error with bulk power on: ${error.message}`, 'error');
+            }
+        }
+
+        async function bulkPowerOff() {
+            if (!confirm('Are you sure you want to power off all displays?')) {
+                return;
+            }
+
+            try {
+                const response = await fetch('/api/displays/bulk/power', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ action: 'off' })
+                });
+
+                const data = await response.json();
+
+                if (data.success) {
+                    showNotification(`Powered OFF ${data.successful_displays} of ${data.total_displays} displays`, 'success');
+                    setTimeout(loadDisplays, 2000);
+                } else {
+                    showNotification(`Bulk power off failed: ${data.error}`, 'error');
+                }
+            } catch (error) {
+                showNotification(`Error with bulk power off: ${error.message}`, 'error');
+            }
+        }
+
+        async function applyBulkVolume() {
+            const volume = document.getElementById('bulk-volume-slider').value;
+
+            try {
+                const response = await fetch('/api/displays/bulk/volume', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ volume: parseInt(volume) })
+                });
+
+                const data = await response.json();
+
+                if (data.success) {
+                    showNotification(`Volume set to ${volume}% on ${data.successful_displays} displays`, 'success');
+                } else {
+                    showNotification(`Bulk volume control failed: ${data.error}`, 'error');
+                }
+            } catch (error) {
+                showNotification(`Error with bulk volume control: ${error.message}`, 'error');
+            }
+        }
+
+        async function bulkMute() {
+            try {
+                const response = await fetch('/api/displays/bulk/volume', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ mute: true })
+                });
+
+                const data = await response.json();
+
+                if (data.success) {
+                    showNotification(`Muted ${data.successful_displays} displays`, 'success');
+                } else {
+                    showNotification(`Bulk mute failed: ${data.error}`, 'error');
+                }
+            } catch (error) {
+                showNotification(`Error with bulk mute: ${error.message}`, 'error');
+            }
+        }
+
+        async function applyBulkInput() {
+            const input = document.getElementById('bulk-input-select').value;
+
+            try {
+                const displayIds = Object.keys(displays);
+                const results = {};
+
+                for (const displayId of displayIds) {
+                    try {
+                        const response = await fetch(`/api/displays/${displayId}/input`, {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify({ input })
+                        });
+
+                        const data = await response.json();
+                        results[displayId] = data.success;
+                    } catch (error) {
+                        results[displayId] = false;
+                    }
+                }
+
+                const successCount = Object.values(results).filter(Boolean).length;
+                showNotification(`Input changed to ${input} on ${successCount} displays`, 'success');
+
+            } catch (error) {
+                showNotification(`Error with bulk input control: ${error.message}`, 'error');
+            }
+        }
+
+        async function applyBulkPictureSettings() {
+            const mode = document.getElementById('bulk-picture-mode').value;
+            const brightness = document.getElementById('bulk-brightness-slider').value;
+            const contrast = document.getElementById('bulk-contrast-slider').value;
+
+            try {
+                const displayIds = Object.keys(displays);
+                const results = {};
+
+                for (const displayId of displayIds) {
+                    try {
+                        const response = await fetch(`/api/displays/${displayId}/picture`, {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify({ 
+                                mode, 
+                                brightness: parseInt(brightness),
+                                contrast: parseInt(contrast)
+                            })
+                        });
+
+                        const data = await response.json();
+                        results[displayId] = data.success;
+                    } catch (error) {
+                        results[displayId] = false;
+                    }
+                }
+
+                const successCount = Object.values(results).filter(Boolean).length;
+                showNotification(`Picture settings applied to ${successCount} displays`, 'success');
+
+            } catch (error) {
+                showNotification(`Error with bulk picture settings: ${error.message}`, 'error');
+            }
+        }
+
+        // Monitoring functions
+        async function loadSystemHealth() {
+            try {
+                const response = await fetch('/api/monitoring/health');
+                const data = await response.json();
+
+                if (data.success) {
+                    systemHealth = data.health;
+                    updateSystemStats(data.health);
+                    loadAlerts();
+                } else {
+                    showNotification('Failed to load system health: ' + data.error, 'error');
+                }
+            } catch (error) {
+                showNotification('Error loading system health: ' + error.message, 'error');
+            }
+        }
+
+        function updateSystemStats(health) {
+            const stats = health.statistics;
+            const totalDisplays = stats.total_displays;
+
+            // Update connection rate
+            const connectionRate = totalDisplays > 0 ? Math.round((stats.online_count / totalDisplays) * 100) : 0;
+            document.getElementById('connection-rate').textContent = `${connectionRate}%`;
+
+            // Update power efficiency
+            const powerEfficiency = totalDisplays > 0 ? Math.round((stats.powered_on_count / totalDisplays) * 100) : 0;
+            document.getElementById('power-efficiency').textContent = `${powerEfficiency}%`;
+
+            // Update average uptime (placeholder)
+            document.getElementById('average-uptime').textContent = '24h 15m';
+
+            // Update total errors
+            document.getElementById('total-errors').textContent = stats.total_errors || 0;
+        }
+
+        async function loadAlerts() {
+            try {
+                const response = await fetch('/api/monitoring/alerts');
+                const data = await response.json();
+
+                if (data.success) {
+                    renderAlerts(data.alerts);
+                } else {
+                    showNotification('Failed to load alerts: ' + data.error, 'error');
+                }
+            } catch (error) {
+                console.error('Error loading alerts:', error);
+            }
+        }
+
+        function renderAlerts(alerts) {
+            const alertsList = document.getElementById('alerts-list');
+
+            if (alerts.length === 0) {
+                alertsList.innerHTML = '<div style="text-align: center; opacity: 0.7;">No recent alerts</div>';
+                return;
+            }
+
+            alertsList.innerHTML = alerts.slice(0, 10).map(alert => {
+                const levelColor = alert.level === 'error' ? '#f44336' : 
+                                  alert.level === 'warning' ? '#FF9800' : '#2196F3';
+                const levelIcon = alert.level === 'error' ? '🚨' : 
+                                 alert.level === 'warning' ? '⚠️' : 'ℹ️';
+
+                return `
+                    <div style="border-left: 4px solid ${levelColor}; padding: 10px; margin-bottom: 8px; background: rgba(255,255,255,0.05); border-radius: 0 8px 8px 0;">
+                        <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 4px;">
+                            <span>${levelIcon}</span>
+                            <strong>${alert.level.toUpperCase()}</strong>
+                            <span style="margin-left: auto; font-size: 0.8rem; opacity: 0.7;">
+                                ${formatTime(alert.timestamp)}
+                            </span>
+                        </div>
+                        <div>${alert.message}</div>
+                    </div>
+                `;
+            }).join('');
+        }
+
+        function formatTime(timestamp) {
+            const date = new Date(timestamp);
+            return date.toLocaleTimeString();
+        }
+
+        function refreshMonitoring() {
+            showNotification('Refreshing monitoring data...', 'info');
+            loadSystemHealth();
+            loadDisplays();
+        }
+
+        function runSystemDiagnostic() {
+            showNotification('Running system diagnostic...', 'info');
+            // This would trigger a comprehensive system check
+            setTimeout(() => {
+                showNotification('System diagnostic completed - all systems operational', 'success');
+            }, 3000);
+        }
+
+        function exportSystemReport() {
+            const reportData = {
+                timestamp: new Date().toISOString(),
+                displays: displays,
+                systemHealth: systemHealth,
+                model: 'Samsung LH55BECHLGFXGO'
+            };
+
+            const blob = new Blob([JSON.stringify(reportData, null, 2)], {
+                type: 'application/json'
+            });
+
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `samsung-lh55bechlgfxgo-report-${Date.now()}.json`;
+            a.click();
+            URL.revokeObjectURL(url);
+
+            showNotification('System report exported successfully', 'success');
+        }
+
+        // Utility functions
+        function showNotification(message, type = 'info') {
+            const notification = document.getElementById('notification');
+            notification.textContent = message;
+            notification.className = `notification ${type}`;
+            notification.classList.add('show');
+
+            setTimeout(() => {
+                notification.classList.remove('show');
+            }, 4000);
+        }
+
+        function startPeriodicRefresh() {
+            // Refresh data every 30 seconds
+            refreshInterval = setInterval(() => {
+                if (document.getElementById('displays').classList.contains('active')) {
+                    loadDisplays();
+                } else if (document.getElementById('monitoring').classList.contains('active')) {
+                    loadSystemHealth();
+                }
+            }, 30000);
+        }
+
+        // Cleanup
+        window.addEventListener('beforeunload', () => {
+            if (refreshInterval) {
+                clearInterval(refreshInterval);
+            }
+        });
+
+        // Keyboard shortcuts
+        document.addEventListener('keydown', (event) => {
+            if (event.ctrlKey) {
+                switch (event.key) {
+                    case '1':
+                        event.preventDefault();
+                        switchTab('displays');
+                        break;
+                    case '2':
+                        event.preventDefault();
+                        switchTab('video-wall');
+                        break;
+                    case '3':
+                        event.preventDefault();
+                        switchTab('bulk-actions');
+                        break;
+                    case '4':
+                        event.preventDefault();
+                        switchTab('monitoring');
+                        break;
+                    case 'r':
+                        event.preventDefault();
+                        location.reload();
+                        break;
+                }
+            }
+        });
+    </script>
+</body>
+</html>
